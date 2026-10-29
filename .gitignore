@@ -1,0 +1,7 @@
+# Local environment and database credentials
+.env
+.env.*
+!.env.example
+**/ca.pem
+aiven-schema-backup.sql
+*.env.backup
