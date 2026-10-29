@@ -71,7 +71,7 @@
 
 import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import Logout from './PatientLogout';
+import Logout from './patientLogout';
 import { getUserDetails } from '../../../api';
 import './PatientDashboard.css';
 
