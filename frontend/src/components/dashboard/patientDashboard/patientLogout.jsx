@@ -30,16 +30,17 @@
 
 
 
-import React from 'react';
+import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
+import useAuth from '../../../auth/useAuth';
 import './PatientLogout.css';
 
 const PatientLogout = ({ user }) => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
+    logout();
     navigate('/login');
   };
 
@@ -56,11 +57,11 @@ const PatientLogout = ({ user }) => {
           <p className="user-role">Patient</p>
         </div>
       </div>
-      {/* <button onClick={handleLogout} className="logout-button">
-        <i className="fas fa-sign-out-alt"></i> Logout
-      </button> */}
+      <button type="button" onClick={handleLogout} className="logout-button">Logout</button>
     </div>
   );
 };
+
+PatientLogout.propTypes = { user: PropTypes.shape({ imagePath: PropTypes.string, name: PropTypes.string }) };
 
 export default PatientLogout;

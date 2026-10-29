@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/header/Header';
 import Footer from './components/footer/Footer';
@@ -19,10 +19,18 @@ import Feedback from './components/Doctors/Feedback';
 import DoctorDashboard from './components/dashboard/doctorDashboard/DoctorDashboard.jsx';
 import DoctorProfile from './components/dashboard/doctorDashboard/DoctorProfile.jsx';
 import DoctorAppointments from './components/dashboard/doctorDashboard/DoctorAppointments.jsx';
+import DoctorOverview from './components/dashboard/doctorDashboard/DoctorOverview.jsx';
 
 import PatientDashboard from './components/dashboard/patientDashboard/PatientDashboard.jsx';
 import PatientProfile from './components/dashboard/patientDashboard/PatientProfile.jsx';
 import PatientAppointments from './components/dashboard/patientDashboard/PatientAppoinments.jsx'
+import PatientOverview from './components/dashboard/patientDashboard/PatientOverview.jsx';
+import ProtectedRoute from './components/auth/ProtectedRoute.jsx';
+import VerifyEmail from './components/auth/VerifyEmail.jsx';
+import MedicalRecords from './components/dashboard/patientDashboard/MedicalRecords.jsx';
+import About from './components/about/About.jsx';
+import ForgotPassword from './components/auth/ForgotPassword.jsx';
+import ResetPassword from './components/auth/ResetPassword.jsx';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -35,14 +43,19 @@ function ScrollToTop() {
 }
 
 function App() {
+  const { pathname } = useLocation();
+  const isDashboard = pathname.startsWith('/patient-dashboard') || pathname.startsWith('/doctor-dashboard');
+
   return (
-    <div id="root">
+    <div className="app-shell">
       <ScrollToTop />
-      <Header />
-      <Routes>
+      {!isDashboard && <Header />}
+      <main className="app-main">
+       <Routes>
         {/* Home Page */}
         <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/about" element={<About />} />
 
         {/* Doctors Page */}
         <Route path="/doctors" element={<Doctors />} />
@@ -51,6 +64,9 @@ function App() {
         {/* Authentication Pages */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Services and Contact Pages */}
         <Route path="/services" element={<Services />} />
@@ -60,23 +76,29 @@ function App() {
         <Route path="/feedback" element={<Feedback />} />
 
         {/* Doctor Dashboard Routes */}
+        <Route element={<ProtectedRoute roles={['doctor']} />}>
         <Route path="/doctor-dashboard" element={<DoctorDashboard />}>
-          <Route index element={<DoctorProfile />} />
+          <Route index element={<DoctorOverview />} />
           <Route path="profile" element={<DoctorProfile />} />
           <Route path="appointments" element={<DoctorAppointments />} />
         </Route>
+        </Route>
 
         {/* Patient Dashboard Routes */}
+        <Route element={<ProtectedRoute roles={['patient']} />}>
         <Route path="/patient-dashboard" element={<PatientDashboard />}>
-          <Route index element={<PatientProfile />} />
+          <Route index element={<PatientOverview />} />
           <Route path="profile" element={<PatientProfile />} />
           <Route path="appointments" element={<PatientAppointments />} />
+          <Route path="records" element={<MedicalRecords />} />
+        </Route>
         </Route>
 
         {/* Fallback Route for non-existent pages */}
         <Route path="*" element={<div>404 - Page Not Found</div>} />
-      </Routes>
-      <Footer />
+       </Routes>
+      </main>
+      {!isDashboard && <Footer />}
     </div>
   );
 }

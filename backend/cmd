@@ -1,8 +1,6 @@
-   npm init -y
-      npm install express mongodb cors dotenv
-         npm install bcrypt multer
-         npm install jsonwebtoken bcrypt
-         
+Backend commands (run from backend/):
+  npm install
+  npm start
+  npm test
 
-fronten : npm i axion
-      
+Configure MySQL, JWT_SECRET, SMTP, and private storage in backend/.env (copy backend/.env.example first).

@@ -1,261 +1,50 @@
-*{
-    padding: 0%;
-    margin: 0%;
-  }
-
-.home-section {
-  padding: 60px 0;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-.home-section .container {
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 0 15px;
-  
-}
-
-.My_Services{
-  margin-top: 20px;
-}
-
-.MyServiceCards{
-  margin-bottom: 70px;
-}
-
-.p_MY{
-  color:#060909;
-}
-.content {
-  display: flex;
-  flex-direction: column;
-  gap: 90px;
-  justify-content: center;
-  align-items: center;
-}
-
-.text-container {
-  max-width: 470px;
-  padding: 20px;
-  background: rgba(154, 153, 153, 0.586);
-  border-radius: 8px;
-  text-align: center;
-}
-
-.heading {
-  font-size: 28px;
-  line-height: 46px;
-  color: #333;
-  font-family: 'Manrope', sans-serif;
-  font-weight: 800;
-}
-
-.paragraph {
-  font-size: 15px;
-  line-height: 28px;
-  color: #0c0606;
-  font-family: 'Manrope', sans-serif;
-  margin-top: 20px;
-  text-align: center;
-}
-
-.btn {
-  display: inline-block;
-  padding: 12px 24px;
-  background-color: #ff5722;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  font-family: 'Manrope', sans-serif;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  margin-top: 20px;
-}
-
-.btn:hover {
-  background-color: #e64a19;
-  transform: scale(1.05);
-}
-
-.stats {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-  align-items: center;
-  margin-top: 30px;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.stat-number {
-  font-size: 36px;
-  font-weight: 700;
-  color: #333;
-}
-
-.stat-line {
-  width: 100px;
-  height: 2px;
-  border-radius: 1px;
-  margin-top: -10px;
-}
-
-.stat-line-green {
-  background-color: #4CAF50;
-}
-
-.stat-line-yellow {
-  background-color: #FFEB3B;
-}
-
-.stat-line-blue {
-  background-color: #03A9F4;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: #555;
-  text-align: center;
-}
-
-.home-image {
-  width: 100%;
-  border-radius: 8px;
-  margin-top: 30px;
-}
-
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr); 
-  gap: 20px; 
-  justify-content: space-between;
-  margin-top: 20px;
-  color: black;
-}
-
-
-.service-item {
-  background: linear-gradient(135deg, #e3f2fd, #ffffff);
-  border: 1px solid #ccc;
-  padding: 20px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100%; 
-}
-
-.icon-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 250px; 
-  margin-bottom: 15px;
-}
-
-.icon-container img {
-  max-width: 100%; 
-  max-height: 100%; 
-  object-fit: contain; 
-}
-
-
-.service-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-
-.service-desc {
-  flex-grow: 1; 
-  margin-bottom: 20px;
-}
-
-
-.icon-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #0b2f55;
-  text-decoration: none;
-  font-size: 24px;
-}
-
-/* Circle around the icon */
-.circle-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #a8ab79; 
-  border-radius: 50%;
-  width: 50px;
-  height: 50px; 
-  padding: 10px; 
-}
-
-
-.arrow-icon {
-  color: #bf7e7e; 
-}
-
-/* Hover effect */
-.icon-link:hover .arrow-icon {
-  color: rgb(135, 95, 95);
-}
-
-.MyCon{
-  margin-bottom: 30px;
-}
-
-
-@media (min-width: 1024px) {
-  .content {
-    flex-direction: row;
-  }
-}
-
+.home-section { padding: clamp(48px, 7vw, 88px) 0; background: #edf3f6; }
+.home-section .content { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(300px, .95fr); align-items: center; gap: clamp(28px, 5vw, 64px); }
+.home-section .text-container { max-width: 620px; padding: 0; border: 0; background: transparent; text-align: left; }
+.home-section .hero-kicker, .eyebrow { color: var(--brand-600); font-size: .76rem; font-weight: 750; letter-spacing: .12em; }
+.home-section .heading { max-width: 680px; margin: 14px 0 18px; color: var(--brand-950); font-size: clamp(2.45rem, 5.4vw, 4.35rem); font-weight: 730; line-height: 1.06; letter-spacing: -.045em; }
+.home-section .paragraph { max-width: 560px; margin: 0 0 26px; color: #53677c; font-size: 1.08rem; line-height: 1.75; text-align: left; }
+.home-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.home-actions .btn { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; margin: 0; }
+.home-actions .btn-secondary { border: 1px solid var(--line-strong); color: var(--brand-800); background: #fff; }
+.home-section .image-container { grid-column: auto; grid-row: auto; max-height: 470px; overflow: hidden; border: 0; border-radius: 18px; background: #dce7ee; box-shadow: var(--shadow-md); }
+.home-section .home-image { width: 100%; height: 440px; max-height: none; margin: 0; object-fit: cover; }
+.home-assurance { padding: 18px 0; border-bottom: 1px solid var(--line); background: #fff; }
+.home-assurance > .container { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+.home-assurance > .container > div { padding: 8px clamp(14px, 3vw, 36px); border-right: 1px solid var(--line); }
+.home-assurance > .container > div:first-child { padding-left: 0; }
+.home-assurance > .container > div:last-child { border: 0; }
+.home-assurance strong { display: block; margin-bottom: 4px; color: var(--brand-900); font-size: .96rem; }
+.home-assurance span { color: var(--muted); font-size: .86rem; }
+.home-block { padding-block: clamp(44px, 6vw, 72px); }
+.home-block-heading { max-width: 650px; margin: 0 auto 28px; text-align: center; }
+.home-block-heading h2 { margin: 0 0 10px; }
+.home-block-heading p { margin: 0; }
+.home-quick-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.home-quick-link { min-height: 180px; display: flex; flex-direction: column; align-items: flex-start; padding: 24px; border: 1px solid var(--line); border-radius: var(--radius-md); background: #fff; box-shadow: var(--shadow-sm); }
+.home-quick-link strong { margin: 12px 0 6px; color: var(--brand-900); font-size: 1.06rem; }
+.home-quick-link span { color: var(--muted); font-size: .9rem; }
+.home-quick-link svg { color: var(--brand-600); font-size: 24px; }
+.home-service-section { padding-block: 48px; background: #f0f4f3; }
+.home-service-section .MyServiceCards { margin: 28px 0 0; }
+.home-doctors-section { padding-block: 50px 72px; }
+.MyCon { padding-block: 48px; }
+.My_Services { margin: 0 auto 24px; }
+.p_MY { max-width: 640px; margin: 10px auto 0; text-align: center; }
 @media (max-width: 768px) {
-  .heading {
-    font-size: 32px;
-    line-height: 50px;
-  }
+  .home-section .content { grid-template-columns: minmax(0, 1fr); }
+  .home-section .text-container { max-width: 680px; }
+  .home-section .image-container { max-height: 370px; }
+  .home-section .home-image { height: 360px; }
+  .home-assurance > .container { grid-template-columns: minmax(0, 1fr); padding-block: 0; }
+  .home-assurance > .container > div, .home-assurance > .container > div:first-child { padding: 12px 0; border-right: 0; border-bottom: 1px solid var(--line); }
+  .home-assurance > .container > div:last-child { border-bottom: 0; }
 }
-
-@media (max-width: 576px) {
-  .heading {
-    font-size: 26px;
-    line-height: 40px;
-    text-align: center;
-  }
-
-  .content {
-    gap: 50px;
-  }
-}
-/* Add this CSS for the services section background */
-.a {
-  background-color: aliceblue; /* A soft medical-themed background color */
-  padding: 50px 0; /* Adjust padding to add space around the section */
-}
-
-.a .container {
-  padding: 0 20px; /* Adjust padding inside the container if needed */
-}
-
-.b {
-  background-color: #bcdddd; /* A soft medical-themed background color */
-  padding: 50px 0; /* Adjust padding to add space around the section */
-}
-
-.b .container {
-  padding: 0 20px; /* Adjust padding inside the container if needed */
+@media (max-width: 600px) {
+  .home-section { padding-block: 44px; }
+  .home-section .heading { font-size: clamp(2.2rem, 10vw, 3rem); }
+  .home-section .image-container { max-height: 300px; }
+  .home-section .home-image { height: 290px; }
+  .home-quick-links { grid-template-columns: minmax(0, 1fr); }
+  .home-quick-link { min-height: 140px; }
 }

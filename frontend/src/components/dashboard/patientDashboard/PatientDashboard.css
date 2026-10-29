@@ -1,66 +1,19 @@
-.patient-dashboard .dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  background-color: #f5f5f5;
+.patient-dashboard { min-height: 100vh; }
+.patient-dashboard .hamburger { display: none; }
+.patient-dashboard .dashboard-scrim { display: none; }
+.patient-dashboard .dashboard-mobile-nav-heading { display: none; }
+@media (max-width: 768px) {
+  .patient-dashboard .dashboard-header.dashboard-header { z-index: 130; }
+  .patient-dashboard .hamburger { display: flex; flex: 0 0 42px; }
+  .patient-dashboard .dashboard-content .dashboard-sidebar { position: fixed; z-index: 121; top: 84px; right: auto; bottom: auto; left: 12px; width: min(320px, calc(100vw - 24px)); height: auto; max-height: calc(100dvh - 96px); overflow-y: auto; padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: #fff; box-shadow: 0 18px 48px rgb(12 27 46 / 22%); transform: translateX(calc(-100% - 24px)); visibility: hidden; pointer-events: none; transition: transform 180ms ease, visibility 180ms; }
+  .patient-dashboard .dashboard-content .dashboard-sidebar.open { transform: translateX(0); visibility: visible; pointer-events: auto; }
+  .patient-dashboard .dashboard-mobile-nav-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 12px; padding: 2px 2px 12px; border-bottom: 1px solid var(--line); color: var(--brand-950); font-weight: 700; }
+  .patient-dashboard .dashboard-nav-close { min-height: 38px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 9px; color: var(--brand-800); background: #fff; font: inherit; font-size: .85rem; cursor: pointer; }
+  .patient-dashboard .dashboard-content .dashboard-scrim { position: fixed; z-index: 120; inset: 72px 0 0; display: block; width: 100%; height: calc(100dvh - 72px); border: 0; background: rgb(12 27 46 / 38%); }
+  .patient-dashboard .dashboard-header > .logout { margin-left: auto; }
 }
-
-.patient-dashboard .hamburger {
-  display: inline-block;
-  cursor: pointer;
-}
-
-
-.hh1 {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 15px;
-  color: black;
-}
-
-.patient-dashboard .hamburger .line {
-  width: 25px;
-  height: 3px;
-  background-color: #333;
-  margin: 5px 0;
-}
-
-.patient-dashboard .dashboard-content {
-  display: flex;
-}
-
-.patient-dashboard .dashboard-sidebar {
-  width: 250px;
-  background-color: #f9f9f9;
-  transition: transform 0.3s ease;
-  transform: translateX(-100%);
-}
-
-.patient-dashboard .dashboard-sidebar.open {
-  transform: translateX(0);
-}
-
-.patient-dashboard .dashboard-main {
-  flex: 1;
-  padding: 20px;
-}
-
-.patient-dashboard .dashboard-sidebar ul {
-  list-style: none;
-  padding: 0;
-}
-
-.patient-dashboard .dashboard-sidebar li {
-  padding: 15px;
-}
-
-.patient-dashboard .dashboard-sidebar a {
-  text-decoration: none;
-  color: #333;
-}
-
-.patient-dashboard .dashboard-sidebar a.active {
-  font-weight: bold;
- 
+@media (max-width: 380px) {
+  .patient-dashboard .dashboard-header { gap: 8px; padding-inline: 10px; }
+  .patient-dashboard .dashboard-header h1 { min-width: 0; flex: 1; font-size: .98rem; }
+  .patient-dashboard .logout .logout-button { min-height: 38px; padding-inline: 9px; }
 }

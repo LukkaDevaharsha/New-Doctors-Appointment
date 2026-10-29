@@ -1,0 +1,8 @@
+.medical-records { max-width: 900px; margin: 0 auto; padding: 1.5rem; }
+.medical-records form { display: grid; gap: 1rem; margin: 1.5rem 0; padding: 1.25rem; border: 1px solid #d7e2e1; border-radius: 12px; background: #fff; }
+.medical-records label { display: grid; gap: .4rem; font-weight: 600; }
+.medical-records textarea, .medical-records select, .medical-records input { width: 100%; padding: .7rem; border: 1px solid #aebcba; border-radius: 6px; font: inherit; }
+.medical-records li { padding: .9rem 0; border-bottom: 1px solid #e4e9e8; overflow-wrap: anywhere; }
+.record-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .5rem; }
+.record-actions button { padding: .45rem .65rem; cursor: pointer; }
+@media (max-width: 600px) { .medical-records { padding: .75rem; } }

@@ -1,255 +1,175 @@
-// import React, { useState } from 'react';
-// import AV from '../../assets/images/AV.png';
-// import { formateDate } from '../../utils/formateDate';
-// import { AiFillStar } from 'react-icons/ai'; // Import AiFillStar from React Icons
-// import './Feedback.css'; // Import the CSS file
-// import FeedbackForm from './FeedbackForm';
-// import SidePanel from './SidePanel';
 
-// const Feedback = () => {
-//   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
-
-//   return (
-//     <div className='feedback-container'>
-//       <h4 className='feedback-heading'>
-//         All Reviews (264)
-//       </h4>
-
-//       <div className='feedback-item'>
-//         <div className='feedback-avatar'>
-//           <figure>
-//             <img src={AV} alt="Reviewer" className='feedback-avatar-img' />
-//           </figure>
-          
-//           <div className='feedback-info'>
-//             <h5 className='feedback-name'>
-//               Alizeh Ahmed
-//             </h5>
-//             <p className='feedback-date'>
-//               {formateDate("02-14-2023")}
-//             </p>
-//             <p className='feedback-comment'>
-//               Good services, Highly recommended
-//             </p>
-//           </div>
-//         </div>
-
-//         <div className='feedback-stars'>
-//           {
-//             [...Array(5).keys()].map(index => (
-//               <AiFillStar key={index} className='feedback-star' />
-//             ))
-//           }
-//         </div>
-//       </div>
-
-//       {!showFeedbackForm && (
-//         <div className='feedback-form-toggle'>
-//           <button className='btn' onClick={() => setShowFeedbackForm(true)}>
-//             Give Feedback
-//           </button>
-//         </div>
-//       )}
-
-//       {showFeedbackForm && <FeedbackForm />}
-//       <div><SidePanel/></div>
-      
-//     </div>
-//   );
-// };
-
-// export default Feedback;
-
-
-
-// import React, { useState } from 'react';
-// import AV from '../../assets/images/AV.png';
-// import { formateDate } from '../../utils/formateDate';
-// import { AiFillStar } from 'react-icons/ai';
-// import './Feedback.css';
-// import FeedbackForm from './FeedbackForm';
-// import SidePanel from './SidePanel';
-
-// const Feedback = () => {
-//   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
-
-//   return (
-//     <div className='feedback-container'>
-//       <div className='feedback-content'>
-//         <h4 className='feedback-heading'>All Reviews (264)</h4>
-
-//         <div className='feedback-item'>
-//           <div className='feedback-avatar'>
-//             <figure>
-//               <img src={AV} alt="Reviewer" className='feedback-avatar-img' />
-//             </figure>
-            
-//             <div className='feedback-info'>
-//               <h5 className='feedback-name'>Alizeh Ahmed</h5>
-//               <p className='feedback-date'>{formateDate("02-14-2023")}</p>
-//               <p className='feedback-comment'>Good services, Highly recommended</p>
-//             </div>
-//           </div>
-
-          
-//         </div>
-
-//         {!showFeedbackForm && (
-//           <div className='feedback-form-toggle'>
-//             <button className='btn' onClick={() => setShowFeedbackForm(true)}>
-//               Give Feedback
-//             </button>
-//           </div>
-//         )}
-
-//         {showFeedbackForm && <FeedbackForm />}
-//       </div>
-      
-//       <div className='side-panel-container'>
-//         <SidePanel />
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Feedback;
-
-
-//**************FULLY WORKING             */
-// import React, { useState, useEffect } from 'react';
-// import { useLocation } from 'react-router-dom';
-// import AV from '../../assets/images/AV.png';
-// import { formateDate } from '../../utils/formateDate';
-// import { AiFillStar } from 'react-icons/ai';
-// import './Feedback.css';
-// import FeedbackForm from './FeedbackForm';
-// import SidePanel from './SidePanel';
-
-// const Feedback = () => {
-//   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
-//   const [doctorName, setDoctorName] = useState('');
-//   const location = useLocation();
-
-//   useEffect(() => {
-//     const searchParams = new URLSearchParams(location.search);
-//     const name = searchParams.get('doctorName');
-//     if (name) {
-//       setDoctorName(decodeURIComponent(name));
-//     }
-//   }, [location]);
-
-//   // Get current date
-//   const currentDate = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
-
-//   return (
-//     <div className='feedback-container'>
-//       <div className='feedback-content'>
-//         <h4 className='feedback-heading'>All Reviews (264)</h4>
-//         {doctorName && <h3>Book Appointment with Dr. {doctorName}</h3>}
-
-//         <div className='feedback-item'>
-//           <div className='feedback-avatar'>
-//             <figure>
-//               <img src={AV} alt="Reviewer" className='feedback-avatar-img' />
-//             </figure>
-            
-//             <div className='feedback-info'>
-//               <h5 className='feedback-name'>Dr. {doctorName}</h5>
-//               <p className='feedback-date'>{formateDate(currentDate)}</p>
-//               <p className='feedback-comment'>Appointment booking available</p>
-//             </div>
-//           </div>
-//         </div>
-
-//         {!showFeedbackForm && (
-//           <div className='feedback-form-toggle'>
-//             <button className='btn' onClick={() => setShowFeedbackForm(true)}>
-//               GIVE FEEDBACK
-//             </button>
-//           </div>
-//         )}
-
-//         {showFeedbackForm && <FeedbackForm doctorName={doctorName} />}
-//       </div>
-      
-//       <div className='side-panel-container'>
-//         <SidePanel doctorName={doctorName} />
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Feedback;
-
-
-/** AFTER WAD LAB */
-
-
-import React, { useState, useEffect } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
-import AV from '../../assets/images/AV.png';
+import { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
+import { useLocation } from 'react-router-dom';
 import { formateDate } from '../../utils/formateDate';
-import { AiFillStar } from 'react-icons/ai';
-import './Feedback.css';
+import { getDoctorReviews } from '../../api';
 import FeedbackForm from './FeedbackForm';
 import SidePanel from './SidePanel';
+import './Feedback.css';
 
-const Feedback = () => {
+export default function Feedback({
+  doctorId: providedDoctorId,
+  doctorName: providedDoctorName,
+  showBookingPanel = true,
+}) {
+  const [queryDoctorId, setQueryDoctorId] = useState('');
+  const [queryDoctorName, setQueryDoctorName] = useState('');
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
-  const [doctorName, setDoctorName] = useState('');
-  const [doctorId, setDoctorId] = useState('');
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(Boolean(providedDoctorId));
+  const [error, setError] = useState('');
+
   const location = useLocation();
 
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const name = searchParams.get('doctorName');
-    const id = searchParams.get('doctorId');
-    if (name) {
-      setDoctorName(decodeURIComponent(name));
-    }
-    if (id) {
-      setDoctorId(id);
-    }
-  }, [location]);
+  const doctorId = providedDoctorId || queryDoctorId;
+  const doctorName = providedDoctorName || queryDoctorName;
 
-  const currentDate = new Date().toISOString().split('T')[0];
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+
+    setQueryDoctorName(params.get('doctorName') || '');
+    setQueryDoctorId(params.get('doctorId') || '');
+  }, [location.search]);
+
+  useEffect(() => {
+    setError('');
+
+    if (!doctorId) {
+      setReviews([]);
+      setLoading(false);
+      return undefined;
+    }
+
+    let active = true;
+
+    setLoading(true);
+
+    getDoctorReviews(doctorId)
+      .then(({ data }) => {
+        if (active) {
+          setReviews(Array.isArray(data) ? data : []);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setError('Unable to load reviews right now.');
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [doctorId]);
 
   return (
-    <div className='feedback-container'>
-      <div className='feedback-content'>
-        <h4 className='feedback-heading'>All Reviews (264)</h4>
-        {doctorName && <h3>Book Appointment with Dr. {doctorName}</h3>}
+    <div
+      className={`feedback-container ${
+        showBookingPanel ? '' : 'feedback-embedded'
+      }`}
+    >
+      <section
+        className="feedback-content"
+        aria-labelledby="reviews-title"
+      >
+        <h2 id="reviews-title" className="feedback-heading">
+          Patient reviews <span>({reviews.length})</span>
+        </h2>
 
-        <div className='feedback-item'>
-          <div className='feedback-avatar'>
-            <figure>
-              <img src={AV} alt="Reviewer" className='feedback-avatar-img' />
-            </figure>
-            
-            <div className='feedback-info'>
-              <h5 className='feedback-name'>Dr. {doctorName}</h5>
-              <p className='feedback-date'>{formateDate(currentDate)}</p>
-              <p className='feedback-comment'>Appointment booking available</p>
-            </div>
-          </div>
-        </div>
-
-        {!showFeedbackForm && (
-          <div className='feedback-form-toggle'>
-            <button className='btn' onClick={() => setShowFeedbackForm(true)}>
-              GIVE FEEDBACK
-            </button>
-          </div>
+        {doctorName && (
+          <p className="feedback-subtitle">
+            Feedback for {doctorName}
+          </p>
         )}
 
-        {showFeedbackForm && <FeedbackForm doctorName={doctorName} />}
-      </div>
-      
-      <div className='side-panel-container'>
-        <SidePanel doctorId={doctorId} />
-      </div>
+        {error && (
+          <p className="alert alert-error" role="alert">
+            {error}
+          </p>
+        )}
+
+        {loading && <p role="status">Loading reviews…</p>}
+
+        {!loading && !error && reviews.length === 0 && (
+          <p className="empty-state">
+            No reviews have been shared yet.
+          </p>
+        )}
+
+        {!loading &&
+          !error &&
+          reviews.map((review, index) => (
+            <article
+              className="feedback-item"
+              key={`${review.createdAt || 'review'}-${index}`}
+            >
+              <div className="feedback-info">
+                <h3 className="feedback-name">Verified patient</h3>
+
+                <p className="feedback-date">
+                  {review.createdAt
+                    ? formateDate(
+                        new Date(review.createdAt)
+                          .toISOString()
+                          .slice(0, 10)
+                      )
+                    : 'Recently'}
+                </p>
+
+                <p className="doctor-rating">
+                  Rating: {review.rating} / 5
+                </p>
+
+                <p className="feedback-comment">
+                  {review.comment}
+                </p>
+              </div>
+            </article>
+          ))}
+
+        {!showFeedbackForm && doctorId && (
+          <button
+            type="button"
+            className="btn"
+            onClick={() => setShowFeedbackForm(true)}
+          >
+            Write a review
+          </button>
+        )}
+
+        {showFeedbackForm && doctorId && (
+          <FeedbackForm doctorId={doctorId} />
+        )}
+
+        {!doctorId && (
+          <p className="empty-state">
+            Choose a doctor profile to view or leave a review.
+          </p>
+        )}
+      </section>
+
+      {showBookingPanel && doctorId && (
+        <aside className="side-panel-container">
+          <SidePanel
+            doctorId={String(doctorId)}
+            doctorName={doctorName || 'Doctor'}
+          />
+        </aside>
+      )}
     </div>
   );
-};
+}
 
-export default Feedback;
+Feedback.propTypes = {
+  doctorId: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+  ]),
+  doctorName: PropTypes.string,
+  showBookingPanel: PropTypes.bool,
+};

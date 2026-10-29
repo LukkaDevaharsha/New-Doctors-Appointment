@@ -1,264 +1,53 @@
-// import React, { useState } from 'react';
-// import { Link, useNavigate } from 'react-router-dom';
-// import '../login/Login.css';
-
-
-// const Login = () => {
-//   const [formData, setFormData] = useState({
-//     email: "",
-//     password: "",
-//   });
-  
-//   const [userType, setUserType] = useState('patient'); // Default to patient
-//   const navigate = useNavigate();
-
-//   const handleInputChange = e => {
-//     setFormData({ ...formData, [e.target.name]: e.target.value });
-//   };
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     // Handle login logic here
-//     console.log('Login submitted', formData);
-
-//     // Example: Logging in without backend logic
-//     // Simulate successful login and redirect based on user type
-//     if (userType === 'patient') {
-//       navigate('/patient-dashboard');
-//     } else {
-//       navigate('/doctor-dashboard');
-//     }
-//     alert('Login successful!');
-//   };
-
-//   return (
-//     <div className="whole">
-//       <div className="auth-container">
-//         <form className="auth-form" onSubmit={handleSubmit}>
-//           <h2 className="auth-heading">Login</h2>
-
-//           <div className="form-group">
-//             <label>User Type</label>
-//             <select value={userType} onChange={(e) => setUserType(e.target.value)}>
-//               <option value="patient">Patient</option>
-//               <option value="doctor">Doctor</option>
-//             </select>
-//           </div>
-
-//           <div className="form-group">
-//             <label>Email</label>
-//             <input 
-//               type="email" 
-//               name="email"
-//               value={formData.email}
-//               onChange={handleInputChange}
-//               required
-//             />
-//           </div>
-
-//           <div className="form-group">
-//             <label>Password</label>
-//             <input 
-//               type="password" 
-//               name="password"
-//               value={formData.password}
-//               onChange={handleInputChange}
-//               required
-//             />
-//           </div>
-
-//           <button type="submit" className="btn auth-btn">Login</button>
-//           <p>
-//             Don't have an account? <Link to="/Signup" className="auth-link">Register</Link>
-//           </p>
-//         </form>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Login;
-
-/** BEFORE WAD LAB */
-
-// import React, { useState } from 'react';
-// import { Link, useNavigate } from 'react-router-dom';
-// import '../login/Login.css';
-// import { loginUser } from '../../api';
-
-// const Login = () => {
-//   const [formData, setFormData] = useState({
-//     email: "",
-//     password: "",
-//   });
-  
-//   const [role, setRole] = useState('patient');
-//   const [error, setError] = useState('');
-//   const navigate = useNavigate();
-
-//   const handleInputChange = e => {
-//     setFormData({ ...formData, [e.target.name]: e.target.value });
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     setError('');
-
-//     try {
-//       const response = await loginUser({ ...formData, role });
-//       localStorage.setItem('token', response.data.token);
-//       localStorage.setItem('userId', response.data.userId);
-//       localStorage.setItem('role', response.data.role);
-
-//       if (role === 'patient') {
-//         navigate('/patient-dashboard');
-//       } else {
-//         navigate('/doctor-dashboard');
-//       }
-//     } catch (error) {
-//       setError(error.response?.data?.message || 'An error occurred during login');
-//     }
-//   };
-
-//   return (
-//     <div className="whole">
-//       <div className="auth-container">
-//         <form className="auth-form" onSubmit={handleSubmit}>
-//           <h2 className="auth-heading">Login</h2>
-//           {error && <p className="error-message">{error}</p>}
-
-//           <div className="form-group">
-//             <label>User Type</label>
-//             <select value={role} onChange={(e) => setRole(e.target.value)}>
-//               <option value="patient">Patient</option>
-//               <option value="doctor">Doctor</option>
-//             </select>
-//           </div>
-
-//           <div className="form-group">
-//             <label>Email</label>
-//             <input 
-//               type="email" 
-//               name="email"
-//               value={formData.email}
-//               onChange={handleInputChange}
-//               required
-//             />
-//           </div>
-
-//           <div className="form-group">
-//             <label>Password</label>
-//             <input 
-//               type="password" 
-//               name="password"
-//               value={formData.password}
-//               onChange={handleInputChange}
-//               required
-//             />
-//           </div>
-
-//           <button type="submit" className="btn auth-btn">Login</button>
-//           <p>
-//             Don't have an account? <Link to="/Signup" className="auth-link">Register</Link>
-//           </p>
-//         </form>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Login;
-
-
-/** AFTER WAD LAB */
-
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import '../login/Login.css';
+import { HiEye, HiEyeOff } from 'react-icons/hi';
 import { loginUser } from '../../api';
-import { useAuth } from '../../AuthContext';
+import useAuth from '../../auth/useAuth';
+import '../login/Login.css';
 
-const Login = () => {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-  
+export default function Login() {
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [role, setRole] = useState('patient');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const handleInputChange = e => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  async function handleSubmit(event) {
+    event.preventDefault();
     setError('');
-
+    setLoading(true);
     try {
-      const response = await loginUser({ ...formData, role });
-      await login(response.data); // Use await here as login is now an async function
-
-      console.log('Login successful, user data:', response.data);
-
-      if (response.data.role === 'patient') {
-        navigate('/patient-dashboard');
-      } else {
-        navigate('/doctor-dashboard');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      setError(error.response?.data?.message || 'An error occurred during login');
+      const { data } = await loginUser({ ...formData, role });
+      await login(data);
+      if (!data.emailVerified) navigate(`/verify-email?email=${encodeURIComponent(data.email || formData.email)}`);
+      else navigate(data.role === 'patient' ? '/patient-dashboard' : '/doctor-dashboard');
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'We could not sign you in. Check your details and try again.');
+    } finally {
+      setLoading(false);
     }
-  };
+  }
 
   return (
-    <div className="whole">
-      <div className="auth-container">
-        <form className="auth-form" onSubmit={handleSubmit}>
-          <h2 className="auth-heading">Login</h2>
-          {error && <p className="error-message">{error}</p>}
-
-          <div className="form-group">
-            <label>User Type</label>
-            <select value={role} onChange={(e) => setRole(e.target.value)}>
-              <option value="patient">Patient</option>
-              <option value="doctor">Doctor</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label>Email</label>
-            <input 
-              type="email" 
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Password</label>
-            <input 
-              type="password" 
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-
-          <button type="submit" className="btn auth-btn">Login</button>
-          <p>
-            Don't have an account? <Link to="/Signup" className="auth-link">Register</Link>
-          </p>
-        </form>
+    <main className="whole auth-page">
+      <div className="auth-shell">
+        <div className="auth-aside"><span className="auth-mark">AMC</span><p className="eyebrow">Care, made more connected</p><h1>Your health deserves a simpler next step.</h1><p>Find trusted care, manage your appointments, and keep your health information close at hand.</p></div>
+        <section className="auth-container" aria-labelledby="login-title">
+          <div className="auth-intro"><p className="eyebrow">WELCOME BACK</p><h2 id="login-title" className="auth-heading">Sign in to your account</h2><p>Use your registered email and password to continue.</p></div>
+          <form className="auth-form" onSubmit={handleSubmit}>
+            {error && <p className="alert alert-error" role="alert">{error}</p>}
+            <div className="form-group"><label htmlFor="login-role">Account type</label><select id="login-role" value={role} onChange={(event) => setRole(event.target.value)}><option value="patient">Patient</option><option value="doctor">Doctor</option></select></div>
+            <div className="form-group"><label htmlFor="login-email">Email address</label><input id="login-email" type="email" name="email" autoComplete="username" value={formData.email} onChange={(event) => setFormData({ ...formData, email: event.target.value })} required /></div>
+            <div className="form-group"><label htmlFor="login-password">Password</label><div className="password-control"><input id="login-password" type={showPassword ? 'text' : 'password'} name="password" autoComplete="current-password" value={formData.password} onChange={(event) => setFormData({ ...formData, password: event.target.value })} required /><button type="button" className="password-toggle" aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword} onClick={() => setShowPassword((visible) => !visible)}>{showPassword ? <HiEyeOff aria-hidden="true" /> : <HiEye aria-hidden="true" />}</button></div></div>
+            <div className="auth-meta"><Link to="/verify-email">Need a verification email?</Link></div>
+            <div className="auth-meta"><Link to="/forgot-password">Forgot your password?</Link></div>
+            <button type="submit" className="btn auth-btn" disabled={loading}>{loading ? 'Signing in…' : 'Sign in securely'}</button>
+          </form>
+          <p className="auth-switch">New to Alpha Medical Care? <Link to="/signup">Create an account</Link></p>
+        </section>
       </div>
-    </div>
+    </main>
   );
-};
-
-export default Login;
+}

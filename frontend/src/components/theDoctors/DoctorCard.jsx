@@ -1,135 +1,55 @@
-// import React from 'react';
-// import { BsArrowRight } from 'react-icons/bs'; 
-// import './DoctorCard.css'; 
+import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
+import { BsArrowRight } from 'react-icons/bs';
+import defaultDoctorImage from '../../assets/images/doc.png';
+import { getDoctorPhotoUrl } from '../../api';
+import './DoctorCard.css';
 
-// const DoctorCard = ({ doctor }) => {
-//   const { name, specialty, avgRating, totalRating, photo, totalPatients, hospital } = doctor;
-
-//   return (
-//     <div className='doctor-card'>
-//       <img src={photo} alt={name} className='doctor-photo' />
-//       <h3 className='doctor-name'>{name}</h3>
-//       <p className='doctor-specialty'>{specialty}</p>
-//       <p className='doctor-hospital'>{hospital}</p>
-//       <div className='doctor-info'>
-//         <span className='doctor-rating'>{avgRating} / 5</span>
-//         <span className='doctor-patients'>{totalPatients} patients</span>
-//       </div>
-//       <div className='arrow-icon-wrapper'>
-//         <BsArrowRight className='arrow-icon' /> 
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default DoctorCard;
-
-
-
-
-// import React from 'react';
-// import { BsArrowRight } from 'react-icons/bs'; 
-// import { useNavigate } from 'react-router-dom';
-// import './DoctorCard.css'; 
-
-// const DoctorCard = ({ doctor }) => {
-//   const { name, specialty, avgRating, totalRating, photo, totalPatients, hospital } = doctor;
-//   const navigate = useNavigate();
-
-//   const handleFeedbackClick = () => {
-//     navigate('/feedback');
-//   };
-
-//   return (
-//     <div className='doctor-card'>
-//       <img src={photo} alt={name} className='doctor-photo' />
-//       <h3 className='doctor-name'>{name}</h3>
-//       <p className='doctor-specialty'>{specialty}</p>
-//       <p className='doctor-hospital'>{hospital}</p>
-//       <div className='doctor-info'>
-//         <span className='doctor-rating'>{avgRating} / 5</span>
-//         <span className='doctor-patients'>{totalPatients} patients</span>
-//       </div>
-//       <div className='arrow-icon-wrapper'>
-//         <BsArrowRight className='arrow-icon' /> 
-//       </div>
-//       <button onClick={handleFeedbackClick} className='feedback-btn'>Book Appointment</button>
-//     </div>
-//   );
-// };
-
-// export default DoctorCard;
-
-
-/**BEFORE WAD LAB */
-// import React from 'react';
-// import { BsArrowRight } from 'react-icons/bs'; 
-// import { useNavigate } from 'react-router-dom';
-// import './DoctorCard.css'; 
-
-// const DoctorCard = ({ doctor }) => {
-//   const { name, specialty, avgRating, totalRating, photo, totalPatients, hospital } = doctor;
-//   const navigate = useNavigate();
-
-//   const handleFeedbackClick = () => {
-//     navigate(`/feedback?doctorName=${encodeURIComponent(name)}`);
-//   };
-
-//   return (
-//     <div className='doctor-card'>
-//       <img src={photo} alt={name} className='doctor-photo' />
-//       <h3 className='doctor-name'>{name}</h3>
-//       <p className='doctor-specialty'>{specialty}</p>
-//       <p className='doctor-hospital'>{hospital}</p>
-//       <div className='doctor-info'>
-//         <span className='doctor-rating'>{avgRating} / 5</span>
-//         <span className='doctor-patients'>{totalPatients} patients</span>
-//       </div>
-//       <div className='arrow-icon-wrapper'>
-//         <BsArrowRight className='arrow-icon' /> 
-//       </div>
-//       <button onClick={handleFeedbackClick} className='feedback-btn'>Book Appointment</button>
-//     </div>
-//   );
-// };
-
-// export default DoctorCard;
-
-
-
-
-/**AFTER WAD LAB */
-
-import React from 'react';
-import { BsArrowRight } from 'react-icons/bs'; 
-import { useNavigate } from 'react-router-dom';
-import './DoctorCard.css'; 
-
-const DoctorCard = ({ doctor }) => {
-  const { _id, id, name, specialization, avgRating, totalRating, photo, totalPatients, hospital } = doctor;
-  const navigate = useNavigate();
-
-  const handleBookAppointment = () => {
-    const doctorId = _id || id;
-    navigate(`/feedback?doctorName=${encodeURIComponent(name)}&doctorId=${doctorId}`);
-  };
-
+export default function DoctorCard({ doctor }) {
+  const id = String(doctor.id || doctor._id || '');
+  const name = doctor.name || 'Doctor';
+  const doctorUrl = `/doctors/${encodeURIComponent(id)}`;
+  const bookingUrl = `/feedback?doctorName=${encodeURIComponent(name)}&doctorId=${encodeURIComponent(id)}`;
   return (
-    <div className='doctor-card'>
-      <img src={photo} alt={name} className='doctor-photo' />
-      <h3 className='doctor-name'>{name}</h3>
-      <p className='doctor-specialty'>{specialization}</p>
-      <p className='doctor-hospital'>{hospital}</p>
-      <div className='doctor-info'>
-        <span className='doctor-rating'>{avgRating} / 5</span>
-        <span className='doctor-patients'>{totalPatients} patients</span>
+    <article className="doctor-card">
+      <img src={doctor.photo ? getDoctorPhotoUrl(doctor.id || doctor._id) : defaultDoctorImage} alt={`${name} profile`} className="doctor-photo" loading="lazy" onError={(event) => { event.currentTarget.src = defaultDoctorImage; }} />
+      <div className="doctor-card-body">
+        <p className="doctor-specialty">{doctor.specialization || 'General practice'}</p>
+        <h3 className="doctor-name">{name}</h3>
+        {doctor.qualifications && <p className="doctor-qualifications">{doctor.qualifications}</p>}
+        {doctor.experience !== null && doctor.experience !== undefined && <p className="doctor-experience">{doctor.experience} years of experience</p>}
+        <p className="doctor-hospital">{doctor.hospitalName || doctor.hospital || 'Healthcare professional'}{doctor.city ? ` · ${doctor.city}` : ''}</p>
+        {doctor.clinicAddress && <p className="doctor-location">{doctor.clinicAddress}</p>}
+        <div className="doctor-info">
+          <span className="doctor-rating">{Number(doctor.avgRating) > 0 ? `${Number(doctor.avgRating).toFixed(1)} / 5` : 'New profile'}</span>
+          {Number(doctor.consultationFee) > 0 && <span>Fee {Number(doctor.consultationFee).toLocaleString()}</span>}
+          {doctor.consultationModes?.length > 0 && <span>{doctor.consultationModes.join(' · ')}</span>}
+        </div>
       </div>
-      <div className='arrow-icon-wrapper'>
-        <BsArrowRight className='arrow-icon' /> 
+      <div className="doctor-card-actions">
+        <Link to={doctorUrl} className="doctor-profile-link">View profile <BsArrowRight aria-hidden="true" /></Link>
+        <Link to={bookingUrl} className="feedback-btn">Book appointment</Link>
       </div>
-      <button onClick={handleBookAppointment} className='feedback-btn'>Book Appointment</button>
-    </div>
+    </article>
   );
-};
+}
 
-export default DoctorCard;
+DoctorCard.propTypes = {
+  doctor: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    _id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    name: PropTypes.string,
+    specialization: PropTypes.string,
+    hospitalName: PropTypes.string,
+    hospital: PropTypes.string,
+    qualifications: PropTypes.string,
+    experience: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    clinicAddress: PropTypes.string,
+    city: PropTypes.string,
+    consultationFee: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    consultationModes: PropTypes.arrayOf(PropTypes.string),
+    avgRating: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    totalPatients: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    photo: PropTypes.string,
+  }).isRequired,
+};

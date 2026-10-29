@@ -30,7 +30,6 @@
 // export default Contact;
 
 
-import React from 'react';
 import '../contact/Contact.css';
 
 const Contact = () => {
@@ -39,7 +38,7 @@ const Contact = () => {
       <div className="container">
         <h2>Contact Us</h2>
         <p className="text_para">
-          If you have any questions, issues, or feedback, please don't hesitate to contact us.
+          If you have questions, issues, or feedback, please do not hesitate to contact us.
         </p>
         <form className="contact_form">
           <div className="form_group_row">

@@ -68,36 +68,33 @@
 
 
 
-import React from 'react';
+import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
+import useAuth from '../../../auth/useAuth';
 import './Logout.css';
 
 const Logout = ({ user }) => {
   const navigate = useNavigate();
-
-  console.log('Logout component - user prop:', user); // Add this debug log
+  const { logout } = useAuth();
 
   const handleLogout = () => {
-    // Clear localStorage
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('role');
-    
-    // Redirect to login page
+    logout();
     navigate('/login');
   };
 
   // Determine the display name
-  const displayName = user.data.name;
+  const displayName = user?.name || 'Doctor';
 
   return (
     <div className="logout-container">
       <span className="user-greeting">
         Hello, {displayName}
       </span>
-      {/* <button onClick={handleLogout} className="logout-button">Logout</button> */}
+      <button type="button" onClick={handleLogout} className="logout-button">Logout</button>
     </div>
   );
 };
+
+Logout.propTypes = { user: PropTypes.shape({ name: PropTypes.string }) };
 
 export default Logout;

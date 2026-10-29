@@ -1,273 +1,66 @@
-// import React from 'react';
-// import './Doctors.css';
-// import DoctorCard from "./../../components/theDoctors/DoctorCard";
-// import { doctors } from '../../assets/data/doctors';
-
-// const Doctors = () => {
-//   return (
-//     <>
-//       <div className="doctor-section">
-//         <div className="container">
-//           <h2 className="heading">Find a Doctor</h2>
-//           <div className="search-container">
-//             <input id="search-box" type="search" className="search-input" placeholder="Search for doctors..." />
-//             <button className="search-button">Search</button>
-//           </div>
-//         </div>
-//       </div>
-
-// <section>
-//   <div className="container">
-//   <div className='doctor-list'>
-//       {doctors.map(doctor => (
-//         <DoctorCard key={doctor.id} doctor={doctor} />
-//       ))}
-//     </div>
-//   </div>
-// </section>
-//     </>
-//   );
-// };
-
-// export default Doctors;
-
-
-
-// import React, { useState } from 'react';
-// import './Doctors.css';
-// import DoctorCard from "./../../components/theDoctors/DoctorCard";
-// import { searchDoctors } from '../../api';
-// import { doctors as defaultDoctors } from '../../assets/data/doctors';
-
-// const Doctors = () => {
-//   const [searchTerm, setSearchTerm] = useState('');
-//   const [searchResults, setSearchResults] = useState(null);
-//   const [isLoading, setIsLoading] = useState(false);
-//   const [error, setError] = useState(null);
-
-//   const handleSearch = () => {
-//     if (!searchTerm.trim()) {
-//       setSearchResults([]);
-//       return;
-//     }
-
-//     setIsLoading(true);
-//     setError(null);
-
-//     searchDoctors(searchTerm)
-//       .then(results => {
-//         console.log('Search results:', results);
-//         setSearchResults(results);
-//       })
-//       .catch(err => {
-//         console.error('Error in handleSearch:', err);
-//         setError('Failed to fetch doctor details. Please try again.');
-//         setSearchResults([]);
-//       })
-//       .finally(() => {
-//         setIsLoading(false);
-//       });
-//   };
-
-//   const displayDoctors = searchResults || defaultDoctors;
-
-//   return (
-//     <>
-//       <div className="doctor-section">
-//         <div className="container">
-//           <h2 className="heading">Find a Doctor</h2>
-//           <div className="search-container">
-//             <input 
-//               id="search-box" 
-//               type="search" 
-//               className="search-input" 
-//               placeholder="Search for a doctor by name..." 
-//               value={searchTerm}
-//               onChange={(e) => setSearchTerm(e.target.value)}
-//             />
-//             <button className="search-button" onClick={handleSearch}>Search</button>
-//           </div>
-//         </div>
-//       </div>
-
-//       <section>
-//         <div className="container">
-//           {isLoading && <p>Loading...</p>}
-//           {error && <p className="error-message">{error}</p>}
-//           <div className='doctor-list'>
-//             {displayDoctors.map(doctor => (
-//               <DoctorCard key={doctor.id || doctor._id} doctor={doctor} />
-//             ))}
-//           </div>
-//           {searchResults && searchResults.length === 0 && !isLoading && !error && (
-//             <p>No doctors found. Try a different name.</p>
-//           )}
-//         </div>
-//       </section>
-//     </>
-//   );
-// };
-
-// export default Doctors;
-
-
-
-/**BEFORE WAD LAB */
-
-
-// import React, { useState } from 'react';
-// import './Doctors.css';
-// import DoctorCard from "./../../components/theDoctors/DoctorCard";
-// import { searchDoctors } from '../../api';
-// import { doctors as defaultDoctors } from '../../assets/data/doctors';
-
-// const Doctors = () => {
-//   const [searchTerm, setSearchTerm] = useState('');
-//   const [searchResults, setSearchResults] = useState(null);
-//   const [isLoading, setIsLoading] = useState(false);
-//   const [error, setError] = useState(null);
-
-//   const handleSearch = () => {
-//     if (!searchTerm.trim()) {
-//       setSearchResults([]);
-//       return;
-//     }
-
-//     setIsLoading(true);
-//     setError(null);
-
-//     searchDoctors(searchTerm)
-//       .then(results => {
-//         console.log('Search results:', results);
-//         setSearchResults(results);
-//       })
-//       .catch(err => {
-//         console.error('Error in handleSearch:', err);
-//         setError('Failed to fetch doctor details. Please try again.');
-//         setSearchResults([]);
-//       })
-//       .finally(() => {
-//         setIsLoading(false);
-//       });
-//   };
-
-//   const displayDoctors = searchResults || defaultDoctors;
-
-//   return (
-//     <>
-//       <div className="doctor-section">
-//         <div className="container">
-//           <h2 className="heading">Find a Doctor by Specialization</h2>
-//           <div className="search-container">
-//             <input 
-//               id="search-box" 
-//               type="search" 
-//               className="search-input" 
-//               placeholder="Search for a doctor by Specialization..." 
-//               value={searchTerm}
-//               onChange={(e) => setSearchTerm(e.target.value)}
-//             />
-//             <button className="search-button" onClick={handleSearch}>Search</button>
-//           </div>
-//         </div>
-//       </div>
-
-//       <section>
-//         <div className="container">
-//           {isLoading && <p>Loading...</p>}
-//           {error && <p className="error-message">{error}</p>}
-//           <div className='doctor-list'>
-//             {displayDoctors.map(doctor => (
-//               <DoctorCard key={doctor.id || doctor._id} doctor={doctor} />
-//             ))}
-//           </div>
-//           {searchResults && searchResults.length === 0 && !isLoading && !error && (
-//             <p>No doctors found. Try a different name.</p>
-//           )}
-//         </div>
-//       </section>
-//     </>
-//   );
-// };
-
-// export default Doctors;
-
-
-/** AFTER WAD LAB */
-
-import React, { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { searchDoctorDirectory } from '../../api';
+import DoctorCard from '../theDoctors/DoctorCard';
 import './Doctors.css';
-import DoctorCard from "./../../components/theDoctors/DoctorCard";
-import { searchDoctors } from '../../api';
-import { doctors as defaultDoctors } from '../../assets/data/doctors';
 
-const Doctors = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+const initialFilters = { name: '', specialty: '', hospital: '', location: '', city: '', mode: '', availableAt: '', sort: 'name' };
 
-  const handleSearch = () => {
-    if (!searchTerm.trim()) {
-      setSearchResults([]);
-      return;
-    }
+export default function Doctors() {
+  const [filters, setFilters] = useState(initialFilters);
+  const [doctors, setDoctors] = useState([]);
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-    setIsLoading(true);
-    setError(null);
+  const search = useCallback(async (nextPage, nextFilters) => {
+    setLoading(true); setError('');
+    const params = { ...nextFilters, page: nextPage, limit: 12 };
+    if (params.availableAt) params.availableAt = `${params.availableAt}:00Z`;
+    Object.keys(params).forEach((key) => { if (params[key] === '') delete params[key]; });
+    try {
+      const result = await searchDoctorDirectory(params);
+      setDoctors(result.doctors || []); setPage(result.page || nextPage); setPages(result.pages || 1); setTotal(result.total || 0);
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'Doctor profiles are temporarily unavailable. Please try again.');
+      setDoctors([]); setTotal(0);
+    } finally { setLoading(false); }
+  }, []);
 
-    searchDoctors(searchTerm)
-      .then(results => {
-        console.log('Search results:', results);
-        setSearchResults(results);
-      })
-      .catch(err => {
-        console.error('Error in handleSearch:', err);
-        setError('Failed to fetch doctor details. Please try again.');
-        setSearchResults([]);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  };
+  useEffect(() => { search(1, initialFilters); }, [search]);
 
-  const displayDoctors = searchResults || defaultDoctors;
+  function update(event) { setFilters((current) => ({ ...current, [event.target.name]: event.target.value })); }
+  function reset() { setFilters(initialFilters); search(1, initialFilters); }
+  function submit(event) { event.preventDefault(); search(1, filters); }
 
   return (
-    <>
-      <div className="doctor-section">
-        <div className="container">
-          <h2 className="heading">Find a Doctor by Specialization</h2>
-          <div className="search-container">
-            <input 
-              id="search-box" 
-              type="search" 
-              className="search-input" 
-              placeholder="Search for a doctor by Specialization..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <button className="search-button" onClick={handleSearch}>Search</button>
+    <section className="doctors-page">
+      <div className="doctor-section"><div className="container">
+        <p className="eyebrow">CARE THAT FITS YOUR NEEDS</p><h1 className="heading">Find your doctor</h1>
+        <p className="page-intro">Search doctor profiles by name, specialty, practice, location, or an open appointment time.</p>
+        <form className="doctor-filter-panel" onSubmit={submit} role="search" aria-label="Filter doctors">
+          <div className="doctor-filters">
+            <label>Doctor name<input name="name" value={filters.name} onChange={update} placeholder="e.g. Alex Morgan" /></label>
+            <label>Specialty<input name="specialty" value={filters.specialty} onChange={update} placeholder="e.g. Cardiology" /></label>
+            <label>Hospital or clinic<input name="hospital" value={filters.hospital} onChange={update} placeholder="Practice name" /></label>
+            <label>City or location<input name="location" value={filters.location} onChange={update} placeholder="City, area, postal code" /></label>
+            <label>Consultation mode<select name="mode" value={filters.mode} onChange={update}><option value="">Any mode</option><option value="in-person">In person</option><option value="online">Online</option></select></label>
+            <label>Open at (UTC)<input name="availableAt" type="datetime-local" value={filters.availableAt} onChange={update} /></label>
+            <label>Sort by<select name="sort" value={filters.sort} onChange={update}><option value="name">Name</option><option value="experience">Experience</option><option value="rating">Patient rating</option></select></label>
           </div>
-        </div>
+          <div className="doctor-filter-actions"><button type="submit" className="search-button" disabled={loading}>{loading ? 'Searching…' : 'Search doctors'}</button><button type="button" className="btn-secondary clear-search" onClick={reset} disabled={loading}>Reset filters</button></div>
+        </form>
+      </div></div>
+      <div className="container doctor-results" aria-live="polite">
+        <div className="results-heading"><h2>Doctor directory</h2>{!loading && <span>{total} {total === 1 ? 'doctor' : 'doctors'}</span>}</div>
+        {loading && <p className="empty-state" role="status">Loading doctor profiles…</p>}
+        {error && <p className="alert alert-error" role="alert">{error}</p>}
+        {!loading && !error && doctors.length > 0 && <><div className="doctor-list">{doctors.map((doctor) => <DoctorCard key={doctor.id} doctor={doctor} />)}</div>
+          {pages > 1 && <nav className="pagination" aria-label="Doctor search pages"><button type="button" className="btn-secondary" disabled={page <= 1 || loading} onClick={() => search(page - 1, filters)}>Previous</button><span>Page {page} of {pages}</span><button type="button" className="btn-secondary" disabled={page >= pages || loading} onClick={() => search(page + 1, filters)}>Next</button></nav>}
+        </>}
+        {!loading && !error && doctors.length === 0 && <p className="empty-state">No doctors match those filters. Try broadening your search.</p>}
       </div>
-
-      <section>
-        <div className="container">
-          {isLoading && <p>Loading...</p>}
-          {error && <p className="error-message">{error}</p>}
-          <div className='doctor-list'>
-            {displayDoctors.map(doctor => (
-              <DoctorCard key={doctor.id || doctor._id} doctor={doctor} />
-            ))}
-          </div>
-          {searchResults && searchResults.length === 0 && !isLoading && !error && (
-            <p>No doctors found. Try a different name.</p>
-          )}
-        </div>
-      </section>
-    </>
+    </section>
   );
-};
-
-export default Doctors;
+}

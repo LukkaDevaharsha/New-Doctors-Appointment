@@ -1,90 +1,13 @@
-/* DoctorAbout.css */
-.doctor-about-container {
-    padding: 1rem;
-  }
-  
-  .heading {
-    font-size: 20px;
-    line-height: 30px;
-    color: #333; /* Heading color */
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  
-  .heading span {
-    font-weight: bold;
-    color: #0066ff; /* Iris blue color */
-    font-size: 24px;
-    line-height: 36px;
-  }
-  
-  .paragraph {
-    color: #666; /* Text color */
-  }
-  
-  .education-section {
-    margin-top: 3rem;
-  }
-  
-  .education-heading {
-    font-size: 20px;
-    line-height: 30px;
-    color: #333; /* Heading color */
-    font-weight: 600;
-  }
-  
-  .education-list {
-    padding-top: 1rem;
-    padding-left: 1rem;
-    padding-right: 1rem;
-    list-style-type: none; /* Remove default list styling */
-  }
-  
-  .education-item {
-    margin-bottom: 1.875rem;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .date {
-    color: #0066ff; /* Iris blue color */
-    font-size: 15px;
-    line-height: 24px;
-    font-weight: 600;
-  }
-  
-  .degree {
-    font-size: 16px;
-    line-height: 24px;
-    font-weight: 500;
-    color: #666; /* Text color */
-  }
-  
-  .experience-section {
-    margin-top: 3rem;
-  }
-  
-  .experience-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 30px;
-    padding-top: 1rem;
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-  
-  .experience-item {
-    padding: 1rem;
-    border-radius: 8px;
-    background-color: #fff9ea; /* Light background color */
-  }
-  
-  .experience-item .role {
-    color: #f6c700; /* Yellow color */
-    font-size: 15px;
-    line-height: 24px;
-    font-weight: 600;
-  }
-  
+.doctor-about-container { padding: 4px 0; }
+.doctor-about-container h2 { margin: 0 0 12px; font-size: 1.35rem; }
+.doctor-about-container > p { margin: 0 0 20px; }
+.doctor-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.doctor-facts > div { min-width: 0; padding: 16px; border-radius: var(--radius-sm); background: var(--brand-50); }
+.doctor-facts dt { margin-bottom: 5px; color: var(--muted); font-size: .8rem; font-weight: 600; }
+.doctor-facts dd { margin: 0; color: var(--brand-900); font-weight: 650; overflow-wrap: anywhere; }
+.doctor-biography, .doctor-expertise { margin-top: 22px; }
+.doctor-biography h3, .doctor-expertise h3 { margin: 0 0 8px; color: var(--brand-900); font-size: 1rem; }
+.doctor-biography p { margin: 0; white-space: pre-line; overflow-wrap: anywhere; }
+.doctor-expertise ul { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.doctor-expertise li { padding: 6px 10px; border-radius: 999px; color: var(--brand-800); background: var(--brand-50); font-size: .82rem; }
+@media (max-width: 480px) { .doctor-facts { grid-template-columns: minmax(0, 1fr); } }

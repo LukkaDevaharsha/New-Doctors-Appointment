@@ -1,67 +1,9 @@
-.services-card {
-  padding: 20px;
-  background: #E8F6F3; /* Soft background color */
-  border-radius: 8px; 
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
-  transition: transform 0.3s ease, box-shadow 0.3s ease; 
-}
-
-.service-index-circle {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #04684f; /* Adjust color for index circle */
-  color: white;
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.services-card-title {
-  font-size: 22px;
-  line-height: 28px;
-  font-weight: 700;
-  color: #0A4D68; /* Dark teal color */
-}
-
-.services-card-desc {
-  font-size: 14px;
-  line-height: 24px;
-  font-weight: 400;
-  margin-top: 16px;
-  color: #333; /* Dark gray for description */
-}
-
-.services-card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 20px;
-}
-
-.icon-link {
-  text-decoration: none;
-}
-
-.circle-icon {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background-color: #A4D8E1; /* Light teal for icon circle */
-}
-
-.arrow-icon {
-  font-size: 20px;
-  color: #0A4D68; /* Dark teal for icon */
-}
-
-.services-card:hover {
-  transform: translateY(-5px); 
-  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
-}
+.services-card { position: relative; display: flex; min-width: 0; flex-direction: column; padding: 26px; border: 1px solid var(--line); border-radius: var(--radius-md); background: #fff; box-shadow: var(--shadow-sm); transition: box-shadow var(--ease), transform var(--ease); }
+.services-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.service-index-circle { display: grid; width: 38px; height: 38px; place-items: center; margin-bottom: 22px; border-radius: 11px; color: var(--brand-800); background: var(--brand-100); font-size: .85rem; font-weight: 750; }
+.services-card .services-card-title { margin: 0; color: var(--brand-900); font-size: 1.12rem; line-height: 1.35; }
+.services-card .services-card-desc { flex: 1; margin: 10px 0 20px; color: var(--muted); font-size: .92rem; line-height: 1.7; }
+.services-card-footer { display: flex; justify-content: flex-start; margin-top: auto; }
+.services-card .icon-link { display: inline-flex; align-items: center; gap: 8px; color: var(--brand-700); font-size: .88rem; font-weight: 650; }
+.services-card .circle-icon { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 50%; color: var(--brand-700); background: var(--brand-50); }
+.services-card .arrow-icon { color: inherit; font-size: 18px; }

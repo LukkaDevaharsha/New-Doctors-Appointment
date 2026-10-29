@@ -1,147 +1,55 @@
-// import React, { useState } from 'react';
-// import { FaStar } from 'react-icons/fa';  // Importing star icon from React Icons
-// import doctorImg04 from '../../assets/images/doctorImg04.jpeg';
-// import DoctorAbout from './DoctorAbout';
-// import Feedback from './Feedback';  // Import the Feedback component
-
-// const DoctorDetails = () => {
-//   const [tab, setTab] = useState('about');
-
-//   return (
-//     <section>
-//       <div className="max-w-[1170px] px-5 mx-auto">
-//         <div className="grid md:grid-cols-3 gap-[50px]">
-//           <div className="md:col-span-2">
-//             <div className="flex items-center">
-//               <figure className="max-w-[200px] max-h-[200px]">
-//                 <img src={doctorImg04} alt="Doctor" className="w-full" />
-//               </figure>
-//               <div>
-//                 <span className="bg-[#CCF0F3] text-irisBlueColor py-1 px-6 lg:py-2 lg:px-6 text-[12px] leading-4 lg:text-[16px] lg:leading-7 font-semibold rounded">
-//                   Surgeon
-//                 </span>
-//                 <h3 className="text-headingColor text-[22px] leading-9 mt-3 font-bold">
-//                   SATURN SOM
-//                 </h3>
-//                 <div className="flex items-center gap-[6px]">
-//                   <span className="flex items-center gap-[6px] text-[14px] leading-5 lg:text-[16px] lg:leading-7 font-semibold text-headingColor">
-//                     <FaStar className="text-yellow-500" />
-//                     4.5
-//                   </span>
-//                   <span className="text-[14px] leading-5 lg:text-[16px] lg:leading-7 font-normal">(264)</span>
-//                 </div>
-//                 <p className="text_para text-[14px] leading-5 md:text-[15px] lg:max-w-[390px]">
-//                   Lorem ipsum dolor sit amet consectetur adipisicing elit. Officia ullam delectus necessitatibus
-//                 </p>
-//               </div>
-//             </div>
-
-//             <div className="mt-[50px] border-b border-solid border-[#0066ff34]">
-//               <button
-//                 onClick={() => setTab('about')}
-//                 className={`${tab === 'about' ? 'border-b border-solid border-primaryColor' : ''} py-2 px-5 mr-5 text-[16px] leading-7 text-headingColor font-semibold`}
-//               >
-//                 About
-//               </button>
-//               <button
-//                 onClick={() => setTab('feedback')}
-//                 className={`${tab === 'feedback' ? 'border-b border-solid border-primaryColor' : ''} py-2 px-5 text-[16px] leading-7 text-headingColor font-semibold`}
-//               >
-//                 Feedback
-//               </button>
-//             </div>
-
-//             <div className='mt-[50px]'>
-//               {
-//                 tab === 'about' && <DoctorAbout />
-//               }
-//               {
-//                 tab === 'feedback' && <Feedback />
-//               }
-//             </div>
-
-//           </div>
-//           <div></div>
-//         </div>
-//       </div>
-//     </section>
-//   );
-// };
-
-// export default DoctorDetails;
-
-
-
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { FaStar } from 'react-icons/fa';  // Importing star icon from React Icons
-import doctorImg04 from '../../assets/images/doctorImg04.jpeg';
+import { useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { getDoctor, getDoctorPhotoUrl } from '../../api';
+import defaultDoctorImage from '../../assets/images/doc.png';
 import DoctorAbout from './DoctorAbout';
-import Feedback from './Feedback';  // Import the Feedback component
+import Feedback from './Feedback';
+import SidePanel from './SidePanel';
 
-const DoctorDetails = () => {
+export default function DoctorDetails() {
+  const { id } = useParams();
+  const [doctor, setDoctor] = useState(null);
   const [tab, setTab] = useState('about');
-  const { id } = useParams(); // Get the doctor's ID from the URL
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError('');
+    setDoctor(null);
+    getDoctor(id)
+      .then(({ data }) => { if (active) setDoctor(data); })
+      .catch((requestError) => { if (active) setError(requestError.response?.status === 404 ? 'This doctor profile could not be found.' : 'Unable to load this doctor profile right now.'); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [id]);
+
+  if (loading) return <main className="doctor-detail-page"><p className="empty-state" role="status">Loading doctor profile…</p></main>;
+  if (error || !doctor) return <main className="doctor-detail-page"><div className="alert alert-error" role="alert">{error || 'Doctor profile unavailable.'}</div><Link to="/doctors">Return to doctor directory</Link></main>;
 
   return (
-    <section>
-      <div className="max-w-[1170px] px-5 mx-auto">
-        <div className="grid md:grid-cols-3 gap-[50px]">
-          <div className="md:col-span-2">
-            <div className="flex items-center">
-              <figure className="max-w-[200px] max-h-[200px]">
-                <img src={doctorImg04} alt="Doctor" className="w-full" />
-              </figure>
-              <div>
-                <span className="bg-[#CCF0F3] text-irisBlueColor py-1 px-6 lg:py-2 lg:px-6 text-[12px] leading-4 lg:text-[16px] lg:leading-7 font-semibold rounded">
-                  Surgeon
-                </span>
-                <h3 className="text-headingColor text-[22px] leading-9 mt-3 font-bold">
-                  SATURN SOM
-                </h3>
-                <div className="flex items-center gap-[6px]">
-                  <span className="flex items-center gap-[6px] text-[14px] leading-5 lg:text-[16px] lg:leading-7 font-semibold text-headingColor">
-                    <FaStar className="text-yellow-500" />
-                    4.5
-                  </span>
-                  <span className="text-[14px] leading-5 lg:text-[16px] lg:leading-7 font-normal">(264)</span>
-                </div>
-                <p className="text_para text-[14px] leading-5 md:text-[15px] lg:max-w-[390px]">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Officia ullam delectus necessitatibus
-                </p>
-              </div>
+    <main className="doctor-detail-page">
+      <p className="eyebrow"><Link to="/doctors">Doctors</Link> / Profile</p>
+      <div className="doctor-detail-layout">
+        <section className="doctor-detail-card">
+          <header className="doctor-profile-head">
+            <figure><img src={doctor.photo ? getDoctorPhotoUrl(doctor.id || doctor._id) : defaultDoctorImage} alt={`${doctor.name} profile`} onError={(event) => { event.currentTarget.src = defaultDoctorImage; }} /></figure>
+            <div>
+              <p className="doctor-specialty">{doctor.specialization || 'General practice'}</p>
+              <h1>{doctor.name}</h1>
+              <p>{doctor.hospitalName || doctor.hospital || 'Healthcare professional'}</p>
+              <p className="doctor-rating">{Number(doctor.avgRating) > 0 ? `${Number(doctor.avgRating).toFixed(1)} / 5` : 'New profile'} · {Number(doctor.totalRating) || 0} reviews</p>
             </div>
-
-            <div className="mt-[50px] border-b border-solid border-[#0066ff34]">
-              <button
-                onClick={() => setTab('about')}
-                className={`${tab === 'about' ? 'border-b border-solid border-primaryColor' : ''} py-2 px-5 mr-5 text-[16px] leading-7 text-headingColor font-semibold`}
-              >
-                About
-              </button>
-              <button
-                onClick={() => setTab('feedback')}
-                className={`${tab === 'feedback' ? 'border-b border-solid border-primaryColor' : ''} py-2 px-5 text-[16px] leading-7 text-headingColor font-semibold`}
-              >
-                Feedback
-              </button>
-            </div>
-
-            <div className='mt-[50px]'>
-              {
-                tab === 'about' && <DoctorAbout />
-              }
-              {
-                tab === 'feedback' && <Feedback doctorId={id} />
-              }
-            </div>
-
+          </header>
+          <div className="doctor-tabs" role="tablist" aria-label="Doctor information">
+            <button type="button" role="tab" aria-selected={tab === 'about'} className={tab === 'about' ? 'active' : ''} onClick={() => setTab('about')}>About</button>
+            <button type="button" role="tab" aria-selected={tab === 'feedback'} className={tab === 'feedback' ? 'active' : ''} onClick={() => setTab('feedback')}>Reviews</button>
           </div>
-          <div></div>
-        </div>
+          <div role="tabpanel">{tab === 'about' ? <DoctorAbout doctor={doctor} /> : <Feedback doctorId={String(doctor.id || doctor._id)} doctorName={doctor.name} showBookingPanel={false} />}</div>
+        </section>
+        <SidePanel doctorId={String(doctor.id || doctor._id)} doctorName={doctor.name} />
       </div>
-    </section>
+    </main>
   );
-};
-
-export default DoctorDetails;
+}

@@ -1,67 +1,54 @@
 const express = require('express');
-const { MongoClient } = require('mongodb');
 const cors = require('cors');
+const path = require('node:path');
+const fs = require('node:fs');
 require('dotenv').config();
-const path = require('path');
-const fs = require('fs');
-
 const apiRoutes = require('./routes/api');
+const { createPool } = require('./db');
+const { runMigrations } = require('./migrate');
 
 const app = express();
-const port = process.env.PORT || 5000;
-
-app.use(cors());
-app.use(express.json());
-
-// API routes
+const port = Number(process.env.PORT) || 5000;
+const appRoot = path.resolve(__dirname, '..');
+app.disable('x-powered-by');
+app.use(cors({ origin: process.env.FRONTEND_ORIGIN ? process.env.FRONTEND_ORIGIN.split(',').map((item) => item.trim()) : ['http://localhost:5173'], methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], allowedHeaders: ['Content-Type', 'Authorization'] }));
+app.use(express.json({ limit: '100kb' }));
 app.use('/api', apiRoutes);
+app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../frontend/build')));
-
-// The "catchall" handler: for any request that doesn't
-// match one above, send back React's index.html file.
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+const frontendDist = path.join(appRoot, 'frontend', 'dist');
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist, { index: false, fallthrough: true }));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) return next();
+    return res.sendFile(path.join(frontendDist, 'index.html'));
+  });
+}
+app.use((req, res) => res.status(404).json({ message: 'Not found' }));
+app.use((error, _req, res, _next) => {
+  if (error instanceof SyntaxError && error.status === 400 && 'body' in error) return res.status(400).json({ message: 'Invalid JSON body' });
+  if (error?.code === 'LIMIT_FILE_SIZE') return res.status(413).json({ message: 'Uploaded file exceeds the configured size limit' });
+  if (error?.name === 'MulterError') return res.status(400).json({ message: 'Invalid file upload' });
+  console.error('Unhandled request error:', error?.message || error);
+  return res.status(500).json({ message: 'The request could not be completed' });
 });
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)){
-    fs.mkdirSync(uploadsDir, { recursive: true });
+async function start() {
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) throw new Error('JWT_SECRET must contain at least 32 characters');
+  const pool = createPool();
+  await pool.query('SELECT 1');
+  await runMigrations(pool);
+  app.locals.pool = pool;
+  const server = app.listen(port, () => console.log(`Server listening on port ${port}`));
+  const shutdown = async () => { server.close(); await pool.end(); process.exit(0); };
+  process.once('SIGINT', shutdown);
+  process.once('SIGTERM', shutdown);
+  return { server, pool };
 }
 
-// Serve static files from the 'uploads' directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-const uri = process.env.MONGODB_URI;
-const client = new MongoClient(uri);
-
-async function connectToDatabase() {
-  try {
-    await client.connect();
-    const database = client.db('DOC_DB');
-    app.locals.database = database; // Make the database accessible to route handlers
-    console.log('Connected to MongoDB');
-  } catch (error) {
-    console.error('Error connecting to MongoDB:', error);
-    process.exit(1);
-  }
-}
-
-connectToDatabase();
-
-app.get('/', (req, res) => {
-  res.send('Backend is running!');
+if (require.main === module) start().catch((error) => {
+  console.error('Server startup failed:', error.message);
+  process.exitCode = 1;
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
-
-// Graceful shutdown
-process.on('SIGINT', async () => {
-  await client.close();
-  console.log('MongoDB connection closed');
-  process.exit(0);
-});
+module.exports = { app, start };

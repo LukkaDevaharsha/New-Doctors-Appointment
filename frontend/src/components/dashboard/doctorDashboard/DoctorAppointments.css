@@ -1,40 +1,23 @@
-.appointments {
-    padding: 20px;
-    background-color: #f5f5f5;
-  }
-  
-  .appointments-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 25px;
-  }
-  
-  .appointment-card {
-    background-color: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-  }
-  
-  .appointment-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-  }
-  
-  .appointment-card h3 {
-    margin-top: 0;
-    color: #333;
-    font-size: 1.2rem;
-  }
-  
-  .appointment-card p {
-    margin: 10px 0;
-    color: #666;
-  }
-  
-  .appointment-card .date-time {
-    font-weight: bold;
-    color: #0066ff;
-  }
+.doctor-dashboard .appointments .appointment-card { display: flex; flex-direction: column; align-items: flex-start; }
+.doctor-dashboard .appointment-card label { width: 100%; }
+.doctor-dashboard .appointment-card textarea { width: 100%; min-width: 0; min-height: 92px; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); font: inherit; resize: vertical; }
+.appointment-search { display: grid; width: min(100%, 440px); gap: 7px; margin: 0 0 20px; color: var(--brand-900); font-size: .88rem; font-weight: 650; }
+.appointment-search input, .appointment-inline-form input, .appointment-inline-form select, .appointment-inline-form textarea { width: 100%; min-height: 44px; padding: 9px 11px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: #fff; font: inherit; }
+.doctor-appointment-card { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
+.appointment-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.appointment-card-top .eyebrow { margin: 0 0 4px; font-size: .73rem; }
+.appointment-card-top h3 { margin: 0; overflow-wrap: anywhere; }
+.status-badge { display: inline-flex; min-height: 28px; flex: 0 0 auto; align-items: center; padding: 4px 9px; border-radius: 999px; color: var(--brand-800); background: var(--brand-100); font-size: .75rem; font-weight: 700; text-transform: capitalize; }
+.status-completed { color: #176344; background: #e6f5ed; }
+.status-cancelled { color: #9f2737; background: #fff0f1; }
+.appointment-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.doctor-appointment-card .btn-secondary, .doctor-appointment-card button.btn-secondary { color: var(--brand-800); background: #fff; }
+.doctor-appointment-card .destructive-action { border-color: #e5bdc3; color: var(--danger); background: #fff; }
+.appointment-inline-form { display: grid; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--brand-50); }
+.appointment-inline-form h4 { margin: 0; }
+.appointment-inline-form label, .appointment-record-actions label { display: grid; gap: 6px; color: var(--brand-900); font-size: .86rem; font-weight: 600; }
+.appointment-inline-form textarea { min-height: 72px; resize: vertical; }
+.appointment-record-actions { display: grid; gap: 10px; margin-top: 4px; padding-top: 14px; border-top: 1px solid var(--line); }
+.patient-history-panel { padding: 14px; border-radius: var(--radius-sm); background: var(--brand-50); }
+.patient-history-panel h4 { margin: 0 0 8px; }
+.patient-history-panel p { margin: 5px 0; font-size: .86rem; overflow-wrap: anywhere; }

@@ -1,406 +1,63 @@
-// import React, { useState } from 'react';
-// import { Link, useNavigate } from 'react-router-dom';
-// import '../login/Login.css';
-// import axios from 'axios'; // Make sure to install axios: npm install axios
-// import { registerUser } from '../../api';
-
-// const Signup = () => {
-//   const [role, setRole] = useState('');
-//   const [name, setName] = useState('');
-//   const [email, setEmail] = useState('');
-//   const [password, setPassword] = useState('');
-//   const [confirmPassword, setConfirmPassword] = useState('');
-//   const [contactNumber, setContactNumber] = useState('');
-//   const [age, setAge] = useState('');
-//   const [gender, setGender] = useState('');
-//   const [address, setAddress] = useState('');
-//   const [specialization, setSpecialization] = useState('');
-//   const [hospitalName, setHospitalName] = useState('');
-//   const [err, setErr] = useState(""); // Error state for handling errors
-//   const [image, setImage] = useState(null);
-//   const [isLoading, setIsLoading] = useState(false);
-
-//   const navigate = useNavigate(); // For navigation after successful registration
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     setIsLoading(true);
-//     setErr('');
-
-//     if (password !== confirmPassword) {
-//       setErr('Passwords do not match');
-//       setIsLoading(false);
-//       return;
-//     }
-
-//     const formData = new FormData();
-//     formData.append('role', role);
-//     formData.append('name', name);
-//     formData.append('email', email);
-//     formData.append('password', password);
-//     formData.append('contactNumber', contactNumber);
-//     formData.append('age', age);
-//     formData.append('gender', gender);
-//     if (image) {
-//       formData.append('image', image);
-//     }
-
-//     if (role === 'doctor') {
-//       formData.append('specialization', specialization);
-//       formData.append('hospitalName', hospitalName);
-//     } else {
-//       formData.append('address', address);
-//     }
-
-//     try {
-//       const response = await registerUser(formData);
-//       if (response.data.success) {
-//         alert('Registration successful!');
-//         navigate('/login');
-//       } else {
-//         setErr(response.data.message || 'Registration failed');
-//       }
-//     } catch (error) {
-//       console.error('Registration error:', error);
-//       if (error.response && error.response.data) {
-//         setErr(error.response.data.message || 'An error occurred during registration');
-//       } else {
-//         setErr('Network error. Please try again.');
-//       }
-//     } finally {
-//       setIsLoading(false);
-//     }
-//   };
-
-//   const handleImageChange = (e) => {
-//     if (e.target.files && e.target.files[0]) {
-//       setImage(e.target.files[0]);
-//     }
-//   };
-
-//   return (
-//     <div className="whole">
-//       <div className="auth-container">
-//         <form className="auth-form" onSubmit={handleSubmit}>
-//           <h2 className="auth-heading">Register</h2>
-//           {err.length !== 0 && <p className="fs-2 text-danger text-center">{err}</p>}
-//           <div className="form-group">
-//             <label>Register as</label>
-//             <select value={role} onChange={(e) => setRole(e.target.value)} required>
-//               <option value="">Select Role</option>
-//               <option value="patient">Patient</option>
-//               <option value="doctor">Doctor</option>
-//             </select>
-//           </div>
-//           <div className="form-group">
-//             <label>Name</label>
-//             <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
-//           </div>
-//           <div className="form-group">
-//             <label>Email</label>
-//             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-//           </div>
-//           <div className="form-group">
-//             <label>Password</label>
-//             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-//           </div>
-//           <div className="form-group">
-//             <label>Confirm Password</label>
-//             <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
-//           </div>
-//           <div className="form-group">
-//             <label>Contact Number</label>
-//             <input type="tel" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required />
-//           </div>
-//           <div className="form-group">
-//             <label>Age</label>
-//             <input type="number" value={age} onChange={(e) => setAge(e.target.value)} required />
-//           </div>
-//           <div className="form-group">
-//             <label>Gender</label>
-//             <select value={gender} onChange={(e) => setGender(e.target.value)} required>
-//               <option value="">Select Gender</option>
-//               <option value="male">Male</option>
-//               <option value="female">Female</option>
-//               <option value="other">Other</option>
-//             </select>
-//           </div>
-
-//           <div className="form-group">
-//             <label>Profile Picture</label>
-//             <input 
-//               type="file" 
-//               accept="image/*"
-//               onChange={handleImageChange}
-//               required
-//             />
-//           </div>
-
-//           {role === 'doctor' && (
-//             <>
-//               <div className="form-group">
-//                 <label>Specialization</label>
-//                 <input type="text" value={specialization} onChange={(e) => setSpecialization(e.target.value)} required />
-//               </div>
-//               <div className="form-group">
-//                 <label>Hospital Name</label>
-//                 <input type="text" value={hospitalName} onChange={(e) => setHospitalName(e.target.value)} required />
-//               </div>
-//             </>
-//           )}
-//           {role === 'patient' && (
-//             <div className="form-group">
-//               <label>Address</label>
-//               <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} required />
-//             </div>
-//           )}
-//           <button type="submit" className="btn auth-btn" disabled={isLoading}>
-//             {isLoading ? 'Registering...' : 'Register'}
-//           </button>
-//         </form>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Signup;
-
-
-
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import '../login/Login.css';
 import { registerUser } from '../../api';
+import '../login/Login.css';
 
-const Signup = () => {
-  const [role, setRole] = useState('');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [contactNumber, setContactNumber] = useState('');
-  const [age, setAge] = useState('');
-  const [gender, setGender] = useState('');
-  const [address, setAddress] = useState('');
-  const [specialization, setSpecialization] = useState('');
-  const [hospitalName, setHospitalName] = useState('');
-  const [err, setErr] = useState(""); // Error state for handling errors
+export default function Signup() {
+  const [values, setValues] = useState({ role: '', name: '', email: '', password: '', confirmPassword: '', contactNumber: '', age: '', gender: '', address: '', specialization: '', hospitalName: '' });
   const [image, setImage] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const navigate = useNavigate(); // For navigation after successful registration
+  function update(event) {
+    setValues((current) => ({ ...current, [event.target.name]: event.target.value }));
+  }
 
-  const customAlert = (message) => {
-    alert(`ALPHA MEDICAL CENTER SAYS: ${message}`);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setErr('');
-
-    // Validation checks
-    if (!role) {
-      customAlert('Please select a role (Patient or Doctor).');
-      setIsLoading(false);
-      return;
-    }
-
-    if (name.trim().length < 2) {
-      customAlert('Name must be at least 2 characters long.');
-      setIsLoading(false);
-      return;
-    }
-
-    if (!email.endsWith('@gmail.com')) {
-      customAlert('Email must end with @gmail.com');
-      setIsLoading(false);
-      return;
-    }
-
-    if (password.length < 5) {
-      customAlert('Password must be at least 5 characters long.');
-      setIsLoading(false);
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      customAlert('Passwords do not match.');
-      setIsLoading(false);
-      return;
-    }
-
-    if (contactNumber.length < 10) {
-      customAlert('Please enter a valid contact number.');
-      setIsLoading(false);
-      return;
-    }
-
-    if (parseInt(age) <= 18 || parseInt(age) > 120) {
-      customAlert('Please enter a valid age between 18 and 120.');
-      setIsLoading(false);
-      return;
-    }
-
-    if (!gender) {
-      customAlert('Please select a gender.');
-      setIsLoading(false);
-      return;
-    }
-
-    if (!image) {
-      customAlert('Please upload a profile picture.');
-      setIsLoading(false);
-      return;
-    }
-
-    if (role === 'doctor') {
-      if (specialization.trim().length < 2) {
-        customAlert('Please enter a valid specialization.');
-        setIsLoading(false);
-        return;
-      }
-      if (hospitalName.trim().length < 2) {
-        customAlert('Please enter a valid hospital name.');
-        setIsLoading(false);
-        return;
-      }
-    } else if (role === 'patient') {
-      if (address.trim().length < 5) {
-        customAlert('Please enter a valid address.');
-        setIsLoading(false);
-        return;
-      }
-    }
-
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setError('');
+    if (values.password.length < 10 || values.password.length > 128 || !/[a-z]/.test(values.password) || !/[A-Z]/.test(values.password) || !/\d/.test(values.password) || !/[^A-Za-z0-9]/.test(values.password)) return setError('Use 10 to 128 characters with uppercase, lowercase, number, and symbol characters.');
+    const phoneDigits = values.contactNumber.replace(/\D/g, '');
+    if (phoneDigits.length < 7 || phoneDigits.length > 15 || !/^\+?[0-9 ()-]{7,24}$/.test(values.contactNumber.trim())) return setError('Enter a valid contact number with 7 to 15 digits.');
+    if (values.password !== values.confirmPassword) return setError('Passwords do not match.');
+    if (!image) return setError('Choose a profile photo to continue.');
+    setLoading(true);
     const formData = new FormData();
-    formData.append('role', role);
-    formData.append('name', name);
-    formData.append('email', email);
-    formData.append('password', password);
-    formData.append('contactNumber', contactNumber);
-    formData.append('age', age);
-    formData.append('gender', gender);
-    if (image) {
-      formData.append('image', image);
-    }
-
-    if (role === 'doctor') {
-      formData.append('specialization', specialization);
-      formData.append('hospitalName', hospitalName);
-    } else {
-      formData.append('address', address);
-    }
-
+    Object.entries(values).forEach(([key, value]) => { if (key !== 'confirmPassword') formData.append(key, value.trim()); });
+    formData.set('image', image);
     try {
-      const response = await registerUser(formData);
-      if (response.data.success) {
-        customAlert('Registration successful!');
-        navigate('/login');
-      } else {
-        setErr(response.data.message || 'Registration failed');
-      }
-    } catch (error) {
-      console.error('Registration error:', error);
-      if (error.response && error.response.data) {
-        customAlert(error.response.data.message || 'An error occurred during registration');
-      } else {
-        customAlert('Network error. Please try again.');
-      }
+      const { data } = await registerUser(formData);
+      if (data.success) navigate(`/verify-email?email=${encodeURIComponent(values.email.trim())}`);
+      else setError(data.message || 'Registration could not be completed.');
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'We could not create your account. Please try again.');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  };
-
-  const handleImageChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setImage(e.target.files[0]);
-    }
-  };
+  }
 
   return (
-    <div className="whole">
-      <div className="auth-container">
-        <form className="auth-form" onSubmit={handleSubmit}>
-          <h2 className="auth-heading">Register</h2>
-          {err.length !== 0 && <p className="fs-2 text-danger text-center">{err}</p>}
-          <div className="form-group">
-            <label>Register as</label>
-            <select value={role} onChange={(e) => setRole(e.target.value)} required>
-              <option value="">Select Role</option>
-              <option value="patient">Patient</option>
-              <option value="doctor">Doctor</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label>Name</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
-          </div>
-          <div className="form-group">
-            <label>Email</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          </div>
-          <div className="form-group">
-            <label>Password</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-          </div>
-          <div className="form-group">
-            <label>Confirm Password</label>
-            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
-          </div>
-          <div className="form-group">
-            <label>Contact Number</label>
-            <input type="tel" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required />
-          </div>
-          <div className="form-group">
-            <label>Age</label>
-            <input type="number" value={age} onChange={(e) => setAge(e.target.value)} required />
-          </div>
-          <div className="form-group">
-            <label>Gender</label>
-            <select value={gender} onChange={(e) => setGender(e.target.value)} required>
-              <option value="">Select Gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label>Profile Picture</label>
-            <input 
-              type="file" 
-              accept="image/*"
-              onChange={handleImageChange}
-              required
-            />
-          </div>
-
-          {role === 'doctor' && (
-            <>
-              <div className="form-group">
-                <label>Specialization</label>
-                <input type="text" value={specialization} onChange={(e) => setSpecialization(e.target.value)} required />
-              </div>
-              <div className="form-group">
-                <label>Hospital Name</label>
-                <input type="text" value={hospitalName} onChange={(e) => setHospitalName(e.target.value)} required />
-              </div>
-            </>
-          )}
-          {role === 'patient' && (
-            <div className="form-group">
-              <label>Address</label>
-              <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} required />
-            </div>
-          )}
-          <button type="submit" className="btn auth-btn" disabled={isLoading}>
-            {isLoading ? 'Registering...' : 'Register'}
-          </button>
+    <main className="whole auth-page auth-page-register">
+      <section className="auth-container auth-register" aria-labelledby="signup-title">
+        <div className="auth-intro"><p className="eyebrow">GET STARTED</p><h1 id="signup-title" className="auth-heading">Create your account</h1><p>Set up a secure account to connect with your care team.</p></div>
+        <form className="auth-form signup-form" onSubmit={handleSubmit}>
+          {error && <p className="alert alert-error form-wide" role="alert">{error}</p>}
+          <div className="form-group"><label htmlFor="signup-role">I am registering as</label><select id="signup-role" name="role" value={values.role} onChange={update} required><option value="">Choose account type</option><option value="patient">Patient</option><option value="doctor">Doctor</option></select></div>
+          <div className="form-group"><label htmlFor="signup-name">Full name</label><input id="signup-name" name="name" autoComplete="name" maxLength="100" value={values.name} onChange={update} required /></div>
+          <div className="form-group"><label htmlFor="signup-email">Email address</label><input id="signup-email" name="email" type="email" autoComplete="email" value={values.email} onChange={update} required /></div>
+          <div className="form-group"><label htmlFor="signup-phone">Contact number</label><input id="signup-phone" name="contactNumber" type="tel" autoComplete="tel" pattern="\+?[0-9 ()-]{7,24}" title="Enter a contact number with 7 to 15 digits." value={values.contactNumber} onChange={update} required /></div>
+          <div className="form-group"><label htmlFor="signup-age">Age</label><input id="signup-age" name="age" type="number" min="1" max="120" value={values.age} onChange={update} required /></div>
+          <div className="form-group"><label htmlFor="signup-gender">Gender</label><select id="signup-gender" name="gender" value={values.gender} onChange={update} required><option value="">Choose an option</option><option value="female">Female</option><option value="male">Male</option><option value="other">Other</option><option value="prefer-not-to-say">Prefer not to say</option></select></div>
+          <div className="form-group"><label htmlFor="signup-password">Password</label><input id="signup-password" name="password" type="password" autoComplete="new-password" minLength="10" maxLength="128" value={values.password} onChange={update} required /><small>Use 10 to 128 characters, including uppercase, lowercase, a number, and a symbol.</small></div>
+          <div className="form-group"><label htmlFor="signup-confirm">Confirm password</label><input id="signup-confirm" name="confirmPassword" type="password" autoComplete="new-password" value={values.confirmPassword} onChange={update} required /></div>
+          {values.role === 'patient' && <div className="form-group form-wide"><label htmlFor="signup-address">Address</label><input id="signup-address" name="address" autoComplete="street-address" value={values.address} onChange={update} required /></div>}
+          {values.role === 'doctor' && <><div className="form-group"><label htmlFor="signup-specialty">Specialization</label><input id="signup-specialty" name="specialization" value={values.specialization} onChange={update} required /></div><div className="form-group"><label htmlFor="signup-hospital">Hospital or clinic</label><input id="signup-hospital" name="hospitalName" value={values.hospitalName} onChange={update} required /></div></>}
+          <div className="form-group form-wide"><label htmlFor="signup-photo">Profile photo <span className="field-hint">JPEG, PNG, or WebP · up to 3 MB</span></label><input id="signup-photo" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => setImage(event.target.files?.[0] || null)} required /></div>
+          <button type="submit" className="btn auth-btn form-wide" disabled={loading}>{loading ? 'Creating your account…' : 'Create account'}</button>
         </form>
-      </div>
-    </div>
+        <p className="auth-switch">Already have an account? <Link to="/login">Sign in</Link></p>
+      </section>
+    </main>
   );
-};
-
-export default Signup;
+}

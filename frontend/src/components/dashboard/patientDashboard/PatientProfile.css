@@ -1,11 +1,11 @@
-.profile-card {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .profile-info {
-    margin-top: 10px;
-  }
-  
+.patient-dashboard .profile-card-container { max-width: 900px; margin: 0; }
+.patient-profile-page { width: 100%; max-width: 900px; }
+.patient-profile-form { display: grid; gap: 20px; padding: clamp(18px, 3vw, 28px); border: 1px solid var(--line); border-radius: var(--radius-md); background: #fff; box-shadow: var(--shadow-sm); }
+.patient-profile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.patient-profile-grid label { display: grid; min-width: 0; gap: 7px; color: var(--brand-900); font-size: .88rem; font-weight: 650; }
+.patient-profile-grid input { width: 100%; min-width: 0; min-height: 46px; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); font: inherit; }
+.patient-profile-grid input[readonly] { color: var(--muted); background: #f4f6f8; }
+.patient-profile-grid .profile-wide { grid-column: 1 / -1; }
+.profile-note { margin: -12px 0 0; font-size: .8rem; }
+.patient-profile-form > .btn { justify-self: start; margin: 0; }
+@media (max-width: 540px) { .patient-profile-grid { grid-template-columns: minmax(0, 1fr); } .patient-profile-grid .profile-wide { grid-column: auto; } }

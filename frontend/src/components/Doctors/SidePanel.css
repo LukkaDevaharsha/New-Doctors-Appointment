@@ -1,195 +1,30 @@
-/* 
-.p-3 {
-    padding: 3rem;
-  
-  }
-  
-  .lg\\:p-5-md {
-    padding:5rem;
-  }
-  
-  .rounded {
-    border-radius: 0.5rem;
-  }
-  
-  .shadow-panelShadow {
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  .flex {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  
-  .mt-0 {
-    margin-top: 0;
-  }
-  
-  .mt-30px {
-    margin-top: 30px;
-  }
-  
-  .mb-2 {
-    margin-bottom: 0.5rem;
-  }
-  
-  .text-16px {
-    font-size: 16px;
-  }
-  
-  .text-15px {
-    font-size: 15px;
-  }
-  
-  .leading-6 {
-    line-height: 1.5;
-  }
-  
-  .leading-7 {
-    line-height: 1.75;
-  }
-  
-  .text-headingColor {
-    color: #333; 
-  }
-  
-  .text-textColor {
-    color: #666; 
-  }
-  
-  .text_para {
-    font-size: 14px;
-    line-height: 1.5;
-    color: #888;
-  }
-  
-  .w-full {
-    width: 100%;
-  }
-  
-  .px-2 {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-  }
-  
-  .btn-md {
-    background-color: #0066cc; 
-    color: white;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    border: none;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-  }
-  
-  .btn-md:hover {
-    background-color: #005bb5; /
-  }
-  
-  .side-panel {
-    position: absolute;
-    top: 150px;
-    right: 20px;
-    width: 300px; 
-    padding-top: 20px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    background-color: white;
-    overflow-y: auto;
-  }
-   */
-
-
-
-
-
-  .side-panel-wrapper {
-    display: flex;
-    flex-direction: row-reverse;
-    align-items: flex-start;
-    gap: 20px;
-  }
-  
-  .side-panel {
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    padding: 1.5rem;
-    width: 300px;
-    flex-shrink: 0;
-  }
-  
-  .calendar-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    padding: 1.5rem;
-    width: 300px;
-  }
-  
-  .react-datepicker {
-    font-family: Arial, sans-serif;
-    border-radius: 0.5rem;
-    border: 1px solid #ccc;
-    width: 100%;
-  }
-  
-  .react-datepicker__header {
-    background-color: #f0f0f0;
-    border-bottom: 1px solid #ccc;
-    border-top-left-radius: 0.5rem;
-    border-top-right-radius: 0.5rem;
-  }
-  
-  .react-datepicker__day--selected {
-    background-color: #0066cc;
-    color: white;
-  }
-  
-  .react-datepicker__day:hover {
-    background-color: #e6f2ff;
-  }
-  
-  .btn-md {
-    background-color: #0066cc;
-    color: white;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    border: none;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-    transition: background-color 0.3s ease;
-  }
-  
-  .btn-md:hover {
-    background-color: #005bb5;
-  }
-  
-  .text_para {
-    font-size: 14px;
-    line-height: 1.5;
-    color: #888;
-  }
-  
-  .text-headingColor {
-    color: #333;
-  }
-  
-  .text-textColor {
-    color: #666;
-  }
-  
-  @media (max-width: 768px) {
-    .side-panel-wrapper {
-      flex-direction: column;
-    }
-  
-    .side-panel, .calendar-container {
-      width: 100%;
-    }
-  }
+.side-panel h2 { margin: 4px 0 10px; color: var(--brand-950); font-size: 1.25rem; }
+.side-panel > p:not(.eyebrow) { color: var(--muted); font-size: .92rem; }
+.side-panel .booking-note { margin: 14px 0; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--brand-50); }
+.side-panel .calendar-container { display: grid; justify-items: stretch; gap: 12px; width: 100%; margin-top: 18px; padding: 16px 0 0; border-top: 1px solid var(--line); }
+.side-panel .calendar-container label { color: var(--brand-900); font-weight: 600; }
+.side-panel .calendar-container select { width: 100%; min-height: 44px; padding: 9px 12px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: #fff; font: inherit; }
+.side-panel .available-slots { width: 100%; margin: 0; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); }
+.side-panel .available-slots legend { padding: 0 4px; color: var(--brand-900); font-size: .85rem; font-weight: 650; }
+.side-panel .slot-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.side-panel .slot-option { min-height: 40px; padding: 7px 5px; border: 1px solid var(--line-strong); border-radius: 7px; color: var(--brand-800); background: #fff; font-size: .83rem; }
+.side-panel .slot-option:hover:not(:disabled), .side-panel .slot-option.selected { border-color: var(--brand-700); color: #fff; background: var(--brand-700); }
+.side-panel .slot-option:disabled { border-color: transparent; color: #8996a6; background: #f1f4f7; text-decoration: line-through; }
+.side-panel .react-datepicker { width: 100%; border-color: var(--line); font-family: inherit; }
+.side-panel .react-datepicker__month-container { float: none; width: 100%; }
+.side-panel .react-datepicker__day-name, .side-panel .react-datepicker__day { width: 2rem; line-height: 2rem; }
+.side-panel .react-datepicker__day--selected { background: var(--brand-700); }
+.side-panel .react-datepicker__day:hover { background: var(--brand-100); }
+.side-panel .alert { margin: 12px 0; }
+.side-panel .btn:disabled { cursor: wait; opacity: .65; }
+.booking-confirmation { display: grid; gap: 12px; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); }
+.booking-confirmation h3 { margin: 0; color: var(--brand-950); font-size: 1.05rem; }
+.booking-confirmation p { margin: 0; color: var(--muted); font-size: .9rem; }
+.booking-confirmation > label { display: grid; gap: 6px; color: var(--brand-900); font-size: .88rem; font-weight: 650; }
+.booking-confirmation input[type="tel"], .booking-confirmation textarea { width: 100%; min-width: 0; min-height: 44px; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); font: inherit; font-weight: 400; }
+.booking-confirmation fieldset { display: grid; gap: 8px; margin: 0; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); }
+.booking-confirmation fieldset label { display: flex; align-items: center; gap: 9px; color: var(--ink); }
+.booking-confirmation fieldset input { accent-color: var(--brand-700); }
+.booking-confirmation fieldset p, .booking-confirmation .booking-terms { font-size: .8rem; }
+.booking-confirmation .booking-terms { display: flex; align-items: flex-start; gap: 9px; font-weight: 500; }
+.booking-confirmation .booking-terms input { flex: 0 0 18px; width: 18px; min-height: 18px; margin-top: 2px; }

@@ -1,4 +1,3 @@
-import React from 'react';
 import { services } from './../../assets/data/services';
 import ServicesCard from './ServicesCard';
 import './ServicesList.css'; // Import the CSS file for ServicesList

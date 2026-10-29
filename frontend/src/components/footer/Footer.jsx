@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import logo2 from '../../assets/images/logo2.png';
 import { RiLinkedinFill } from 'react-icons/ri';
@@ -31,7 +30,7 @@ function Footer() {
       <div className="container">
         {/* Logo, Copyright, and Social Media Links */}
         <div className="logo-container">
-          <img src={logo2} alt="Alpha Medical Care" className="logo" />
+          <Link to="/" aria-label="Alpha Medical Care home"><img src={logo2} alt="Alpha Medical Care" className="logo" /></Link>
           {/* <p className="footer-text">© {new Date().getFullYear()} ALPHA MEDICAL CARE. All rights reserved.</p> */}
           <p className="footer-text">ALPHA MEDICAL CARE. All rights reserved.</p>
           
@@ -63,10 +62,10 @@ function Footer() {
         <div className="footer-section">
           <h4>ACTIONS</h4>
           <ul>
-            <li><Link to="/find-doctor">Find a Doctor</Link></li>
-            <li><Link to="/request-appointment">Request Appointment</Link></li>
-            <li><Link to="/find-location">Find a Location</Link></li>
-            <li><Link to="/get-opinion">Get an Opinion</Link></li>
+            <li><Link to="/doctors">Find a Doctor</Link></li>
+            <li><Link to="/doctors">Book an Appointment</Link></li>
+            <li><Link to="/services">Our Services</Link></li>
+            <li><Link to="/login">Patient Login</Link></li>
           </ul>
         </div>
 
@@ -74,7 +73,6 @@ function Footer() {
         <div className="footer-section">
           <h4>SUPPORT</h4>
           <ul>
-            <li><Link to="/donate">Donate</Link></li>
             <li><Link to="/contact">Contact Us</Link></li>
           </ul>
         </div>

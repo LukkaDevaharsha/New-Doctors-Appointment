@@ -1,32 +1,34 @@
 /** AFTER WAD LAB */
 
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { getUserDetails } from './api'; // You'll need to create this API function
-
-const AuthContext = createContext(null);
+import { useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
+import AuthContext from './auth/context';
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    // Check if user is logged in on component mount
+  const [user, setUser] = useState(() => {
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
     const role = localStorage.getItem('role');
     const email = localStorage.getItem('email');
     const name = localStorage.getItem('name');
-    if (token && userId && role) {
-      setUser({ userId, role, email, name });
-    }
+    const emailVerified = localStorage.getItem('emailVerified') === 'true';
+    return token && userId && role ? { _id: userId, userId, role, email, name, emailVerified } : null;
+  });
+
+  useEffect(() => {
+    const handleExpiredSession = () => setUser(null);
+    window.addEventListener('auth:expired', handleExpiredSession);
+    return () => window.removeEventListener('auth:expired', handleExpiredSession);
   }, []);
 
-  const login = async (userData) => {
-    console.log('Login data:', JSON.stringify(userData, null, 2));
+  const login = useCallback((userData) => {
     const userInfo = {
+      _id: userData.userId,
       userId: userData.userId,
       email: userData.email,
       role: userData.role,
-      name: userData.name
+      name: userData.name,
+      emailVerified: userData.emailVerified === true
     };
     setUser(userInfo);
     localStorage.setItem('token', userData.token);
@@ -34,35 +36,19 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('role', userData.role);
     localStorage.setItem('email', userData.email);
     localStorage.setItem('name', userData.name);
+    localStorage.setItem('emailVerified', String(userInfo.emailVerified));
 
-    try {
-      console.log('Fetching user details for userId:', userData.userId);
-      const userDetails = await getUserDetails(userData.userId);
-      console.log('User details received:', JSON.stringify(userDetails, null, 2));
-      const updatedUserInfo = { 
-        ...userInfo, 
-        name: userDetails.name || userInfo.name,
-        email: userDetails.email || userInfo.email
-      };
-      console.log('Updated user info:', JSON.stringify(updatedUserInfo, null, 2));
-      setUser(updatedUserInfo);
-      localStorage.setItem('name', updatedUserInfo.name);
-      localStorage.setItem('email', updatedUserInfo.email);
-    } catch (error) {
-      console.error('Error fetching user details:', error);
-      // If fetching user details fails, use the data from the login response
-      setUser(userInfo);
-    }
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
     localStorage.removeItem('role');
     localStorage.removeItem('email');
     localStorage.removeItem('name');
-  };
+    localStorage.removeItem('emailVerified');
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>
@@ -71,4 +57,5 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+AuthProvider.propTypes = { children: PropTypes.node.isRequired };
+

@@ -1,327 +1,368 @@
-// import React from 'react';
-// import './SidePanel.css';
 
-// const SidePanel = () => {
-//   return (
-//     <div className="p-3 rounded shadow-panelShadow lg:p-5-md side-panel">
-//       <div className="flex items-center justify-between">
-//         <p className="mt-0 font-semibold text_para">Ticket price</p>
-//         <span className="text-[16px] leading-7 lg:text-[22px] lg:leading-8 text-headingColor font-bold">
-//           500 BDT
-//         </span>
-//       </div>
-//       <div className="mt-[30px]">
-//         <p className="mt-0 font-semibold text_para text-headingColor">Available Time Slots:</p>
-//         <ul className="mt-3">
-//           <li className="flex items-center justify-between mb-2">
-//             <p className="text-[15px] leading-6 text-textColor font-semibold">Sunday</p>
-//             <p className="text-[15px] leading-6 text-textColor font-semibold">4:00 PM - 9:30 PM</p>
-//           </li>
-//           <li className="flex items-center justify-between mb-2">
-//             <p className="text-[15px] leading-6 text-textColor font-semibold">Monday</p>
-//             <p className="text-[15px] leading-6 text-textColor font-semibold">4:00 PM - 9:30 PM</p>
-//           </li>
-//           <li className="flex items-center justify-between mb-2">
-//             <p className="text-[15px] leading-6 text-textColor font-semibold">Tuesday</p>
-//             <p className="text-[15px] leading-6 text-textColor font-semibold">4:00 PM - 9:30 PM</p>
-//           </li>
-//         </ul>
-//       </div>
-//       <button className="w-full px-2 rounded btn-md">Book Appointment</button>
-//     </div>
-//   );
-// };
-
-// export default SidePanel;
-
-
-
-
-
-
-
-/** BEFORE WAD LAB */
-
-// import React, { useState } from 'react';
-// import DatePicker from 'react-datepicker';
-// import 'react-datepicker/dist/react-datepicker.css';
-// import './SidePanel.css';
-
-// const SidePanel = () => {
-//   const [showCalendar, setShowCalendar] = useState(false);
-//   const [selectedDate, setSelectedDate] = useState(null);
-//   const [selectedTime, setSelectedTime] = useState(null);
-//   const [appointmentBooked, setAppointmentBooked] = useState(false);
-
-//   const handleDateChange = (date) => {
-//     setSelectedDate(date);
-//     setSelectedTime(null);
-//   };
-
-//   const handleTimeChange = (time) => {
-//     setSelectedTime(time);
-//   };
-
-//   const handleBookAppointment = () => {
-//     if (selectedDate && selectedTime) {
-//       setAppointmentBooked(true);
-//       setShowCalendar(false);
-//     }
-//   };
-
-//   return (
-//     <div className="side-panel-wrapper">
-//       <div className="side-panel">
-//         <div className="flex justify-between items-center">
-//           <p className="text_para font-semibold">Ticket price</p>
-//           <span className="text-headingColor font-bold text-[16px] leading-7 lg:text-[22px] lg:leading-8">
-//             500 BDT
-//           </span>
-//         </div>
-//         <div className="mt-[30px]">
-//           <p className="text_para font-semibold text-headingColor">Available Time Slots:</p>
-//           <ul className="mt-3">
-//             <li className="flex justify-between mb-2">
-//               <p className="text-[15px] leading-6 text-textColor font-semibold">Sunday</p>
-//               <p className="text-[15px] leading-6 text-textColor font-semibold">4:00 PM - 9:30 PM</p>
-//             </li>
-//             <li className="flex justify-between mb-2">
-//               <p className="text-[15px] leading-6 text-textColor font-semibold">Monday</p>
-//               <p className="text-[15px] leading-6 text-textColor font-semibold">4:00 PM - 9:30 PM</p>
-//             </li>
-//             <li className="flex justify-between mb-2">
-//               <p className="text-[15px] leading-6 text-textColor font-semibold">Tuesday</p>
-//               <p className="text-[15px] leading-6 text-textColor font-semibold">4:00 PM - 9:30 PM</p>
-//             </li>
-//           </ul>
-//         </div>
-//         <button className="w-full px-2 rounded btn-md mt-4" onClick={() => setShowCalendar(!showCalendar)}>
-//           {showCalendar ? 'Hide Calendar' : 'Book Appointment'}
-//         </button>
-//         {appointmentBooked && (
-//           <p className="mt-4 text-center text-green-600">
-//             Appointment booked for: {selectedDate.toLocaleDateString()} at {selectedTime}
-//           </p>
-//         )}
-//       </div>
-//       {showCalendar && (
-//         <div className="calendar-container">
-//           <DatePicker
-//             selected={selectedDate}
-//             onChange={handleDateChange}
-//             inline
-//             minDate={new Date()}
-//           />
-//           {selectedDate && (
-//   <div className="mt-4">
-//     <p className="text_para font-semibold">Select Time:</p>
-//     <select
-//       className="w-full p-2 mt-2 border rounded"
-//       value={selectedTime}
-//       onChange={(e) => handleTimeChange(e.target.value)}
-//     >
-//       <option value="">Choose a time</option>
-//       <option value="09:00">9:00 AM</option>
-//       <option value="10:00">10:00 AM</option>
-//       <option value="11:00">11:00 AM</option>
-//       <option value="12:00">12:00 PM</option>
-//       <option value="13:00">1:00 PM</option>
-//       <option value="14:00">2:00 PM</option>
-//       <option value="15:00">3:00 PM</option>
-//       <option value="16:00">4:00 PM</option>
-//       <option value="17:00">5:00 PM</option>
-//       <option value="18:00">6:00 PM</option>
-//       <option value="19:00">7:00 PM</option>
-//       <option value="20:00">8:00 PM</option>
-//     </select>
-//   </div>
-// )}
-//           {selectedDate && selectedTime && (
-//             <button className="w-full px-2 rounded btn-md mt-4" onClick={handleBookAppointment}>
-//               Confirm Appointment
-//             </button>
-//           )}
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default SidePanel;
-
-
-
-
-/** AFTER WAD LAB */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import './SidePanel.css';
-import { addAppointment } from '../../api';
-import { useAuth } from '../../AuthContext';
+import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
+import {
+  addAppointment,
+  getDoctorAvailability,
+  getUserDetails,
+} from '../../api';
+import useAuth from '../../auth/useAuth';
+import './SidePanel.css';
 
-const SidePanel = ({ doctorId }) => {
+const SidePanel = ({ doctorId, doctorName = 'Doctor' }) => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState('');
-  const [appointmentBooked, setAppointmentBooked] = useState(false);
+  const [slots, setSlots] = useState([]);
+  const [availabilityState, setAvailabilityState] = useState('idle');
+  const [availabilityError, setAvailabilityError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [contactNumber, setContactNumber] = useState('');
+  const [visitReason, setVisitReason] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
+
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
-  };
-
-  const handleTimeChange = (time) => {
-    setSelectedTime(time);
-  };
-
-  const handleBookAppointment = async () => {
-    if (!user || user.role !== 'patient') {
-      alert('Please log in as a patient to book an appointment.');
+  async function toggleBooking() {
+    if (user?.role !== 'patient') {
       navigate('/login');
       return;
     }
 
+    if (user.emailVerified !== true) {
+      navigate(
+        `/verify-email?email=${encodeURIComponent(user.email || '')}`
+      );
+      return;
+    }
+
+    setError('');
+    setMessage('');
+
+    if (showCalendar) {
+      setShowCalendar(false);
+      return;
+    }
+
+    if (!contactNumber && user.userId) {
+      try {
+        const { data } = await getUserDetails(user.userId);
+        setContactNumber(data.contactNumber || '');
+      } catch {
+        // The patient can enter their contact number manually.
+      }
+    }
+
+    setShowCalendar(true);
+  }
+
+  async function loadAvailability(date) {
+    if (!date || !doctorId) {
+      return;
+    }
+
+    setSelectedDate(date);
+    setSelectedTime('');
+    setAvailabilityState('loading');
+    setAvailabilityError('');
+    setSlots([]);
+
+    const dateKey = [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, '0'),
+      String(date.getDate()).padStart(2, '0'),
+    ].join('-');
+
     try {
-      if (!selectedDate || !selectedTime) {
-        alert('Please select both date and time for the appointment.');
-        return;
-      }
+      const result = await getDoctorAvailability(doctorId, dateKey);
 
-      const patientId = user.userId;
-
-      if (!doctorId) {
-        alert('Missing doctor information. Please try again.');
-        return;
-      }
-
-      if (!patientId) {
-        alert('Missing patient information. Please try again.');
-        return;
-      }
-
-      // Validate doctorId and patientId
-      if (!/^[0-9a-fA-F]{24}$/.test(doctorId) || !/^[0-9a-fA-F]{24}$/.test(patientId)) {
-        alert('Invalid doctor or patient ID. Please try again.');
-        return;
-      }
-
-      const appointmentDate = new Date(selectedDate);
-      appointmentDate.setHours(parseInt(selectedTime.split(':')[0]), parseInt(selectedTime.split(':')[1]));
-
-      const appointmentData = {
-        doctorId: doctorId,
-        patientId: patientId,
-        date: appointmentDate.toISOString()
-      };
-
-      console.log('Appointment data being sent:', appointmentData);
-
-      const response = await addAppointment(appointmentData);
-
-      if (response) {
-        setAppointmentBooked(true);
-        setShowCalendar(false);
-        alert('Appointment booked successfully!');
-      } else {
-        alert('Failed to book appointment. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error booking appointment:', error);
-      if (error.response) {
-        console.error('Error response:', error.response.data);
-      }
-      alert('An error occurred while booking the appointment. Please try again.');
+      setSlots(Array.isArray(result.slots) ? result.slots : []);
+      setAvailabilityState(result.status || 'unavailable');
+    } catch (requestError) {
+      setAvailabilityError(
+        requestError.response?.data?.message ||
+          'Unable to check availability for this date.'
+      );
+      setAvailabilityState('error');
     }
-  };
+  }
 
-  const handleBookButtonClick = () => {
-    if (!user || user.role !== 'patient') {
-      alert('Please log in as a patient to book an appointment.');
-      navigate('/login');
-    } else {
-      setShowCalendar(!showCalendar);
+  async function handleBookAppointment(event) {
+    event.preventDefault();
+
+    if (!selectedTime || !doctorId) {
+      setError('Please select an available appointment time.');
+      return;
     }
-  };
+
+    if (!contactNumber.trim()) {
+      setError('Please enter your contact number.');
+      return;
+    }
+
+    if (!termsAccepted) {
+      setError('Please accept the booking terms to continue.');
+      return;
+    }
+
+    setSubmitting(true);
+    setError('');
+    setMessage('');
+
+    try {
+      const { data } = await addAppointment({
+        doctorId,
+        date: selectedTime,
+        patientContactNumber: contactNumber.trim(),
+        visitReason: visitReason.trim(),
+        paymentMethod: 'pay_at_hospital',
+      });
+
+      setMessage(
+        data?.notificationSent
+          ? 'Your appointment is booked. Confirmation emails were sent.'
+          : 'Your appointment is booked. Email confirmation could not be confirmed.'
+      );
+
+      setVisitReason('');
+      setTermsAccepted(false);
+      setShowCalendar(false);
+      setSelectedDate(null);
+      setSelectedTime('');
+      setSlots([]);
+      setAvailabilityState('idle');
+    } catch (requestError) {
+      setError(
+        requestError.response?.data?.message ||
+          'We could not book this appointment. Please choose another open time.'
+      );
+
+      if (selectedDate) {
+        await loadAvailability(selectedDate);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
-    <div className="side-panel-wrapper">
-      <div className="side-panel">
-        <div className="flex justify-between items-center">
-          <p className="text_para font-semibold">Ticket price</p>
-          <span className="text-headingColor font-bold text-[16px] leading-7 lg:text-[22px] lg:leading-8">
-            500 BDT
-          </span>
-        </div>
-        <div className="mt-[30px]">
-          <p className="text_para font-semibold text-headingColor">Available Time Slots:</p>
-          <ul className="mt-3">
-            <li className="flex justify-between mb-2">
-              <p className="text-[15px] leading-6 text-textColor font-semibold">Sunday</p>
-              <p className="text-[15px] leading-6 text-textColor font-semibold">4:00 PM - 9:30 PM</p>
-            </li>
-            <li className="flex justify-between mb-2">
-              <p className="text-[15px] leading-6 text-textColor font-semibold">Monday</p>
-              <p className="text-[15px] leading-6 text-textColor font-semibold">4:00 PM - 9:30 PM</p>
-            </li>
-            <li className="flex justify-between mb-2">
-              <p className="text-[15px] leading-6 text-textColor font-semibold">Tuesday</p>
-              <p className="text-[15px] leading-6 text-textColor font-semibold">4:00 PM - 9:30 PM</p>
-            </li>
-          </ul>
-        </div>
-        <button className="w-full px-2 rounded btn-md mt-4" onClick={handleBookButtonClick}>
-          {showCalendar ? 'Hide Calendar' : 'Book Appointment'}
-        </button>
-        {appointmentBooked && (
-          <p className="mt-4 text-center text-green-600">
-            Appointment booked for: {selectedDate.toLocaleDateString()} at {selectedTime}
-          </p>
-        )}
-      </div>
+    <aside className="side-panel" aria-label="Book an appointment">
+      <p className="eyebrow">Appointments</p>
+
+      <h2>Schedule a visit</h2>
+
+      <p>Choose an open appointment time. All times are shown in UTC.</p>
+
+      {!user && (
+        <p className="booking-note">
+          Sign in with a patient account to book.
+        </p>
+      )}
+
+      {user?.role === 'patient' && user.emailVerified !== true && (
+        <p className="booking-note">
+          Verify your email before booking.
+        </p>
+      )}
+
+      {error && (
+        <p className="alert alert-error" role="alert">
+          {error}
+        </p>
+      )}
+
+      {message && (
+        <p className="alert alert-success" role="status">
+          {message}
+        </p>
+      )}
+
+      <button
+        type="button"
+        className="btn w-full"
+        onClick={toggleBooking}
+      >
+        {showCalendar
+          ? 'Close date picker'
+          : user?.role === 'patient'
+            ? 'Choose a date'
+            : 'Sign in to book'}
+      </button>
+
       {showCalendar && (
-        <div className="calendar-container">
+        <form
+          className="calendar-container"
+          onSubmit={handleBookAppointment}
+        >
+          <label>Appointment date</label>
+
           <DatePicker
             selected={selectedDate}
-            onChange={handleDateChange}
+            onChange={loadAvailability}
             inline
             minDate={new Date()}
           />
-          {selectedDate && (
-            <div className="mt-4">
-              <p className="text_para font-semibold">Select Time:</p>
-              <select
-                className="w-full p-2 mt-2 border rounded"
-                value={selectedTime}
-                onChange={(e) => handleTimeChange(e.target.value)}
-              >
-                <option value="">Choose a time</option>
-                <option value="09:00">9:00 AM</option>
-                <option value="10:00">10:00 AM</option>
-                <option value="11:00">11:00 AM</option>
-                <option value="12:00">12:00 PM</option>
-                <option value="13:00">1:00 PM</option>
-                <option value="14:00">2:00 PM</option>
-                <option value="15:00">3:00 PM</option>
-                <option value="16:00">4:00 PM</option>
-                <option value="17:00">5:00 PM</option>
-                <option value="18:00">6:00 PM</option>
-                <option value="19:00">7:00 PM</option>
-                <option value="20:00">8:00 PM</option>
-              </select>
-            </div>
+
+          {availabilityState === 'loading' && (
+            <p role="status">Checking open times…</p>
           )}
-          {selectedDate && selectedTime && (
-            <button className="w-full px-2 rounded btn-md mt-4" onClick={handleBookAppointment}>
-              Confirm Appointment
+
+          {availabilityError && (
+            <p className="alert alert-error" role="alert">
+              {availabilityError}
+            </p>
+          )}
+
+          {availabilityState === 'unavailable' && (
+            <p className="empty-state">
+              This doctor has no opening on that date.
+            </p>
+          )}
+
+          {availabilityState === 'fully-booked' && (
+            <p className="empty-state">
+              All appointment times are booked for this date.
+            </p>
+          )}
+
+          {slots.some((slot) => slot.status === 'available') && (
+            <fieldset className="available-slots">
+              <legend>Available times · UTC</legend>
+
+              <div className="slot-grid">
+                {slots.map((slot) => (
+                  <button
+                    key={slot.startsAt}
+                    type="button"
+                    className={`slot-option ${
+                      selectedTime === slot.startsAt ? 'selected' : ''
+                    }`}
+                    disabled={slot.status !== 'available'}
+                    aria-pressed={selectedTime === slot.startsAt}
+                    onClick={() => setSelectedTime(slot.startsAt)}
+                  >
+                    {new Date(slot.startsAt)
+                      .toISOString()
+                      .slice(11, 16)}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+          )}
+
+          {availabilityState === 'error' && (
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => selectedDate && loadAvailability(selectedDate)}
+            >
+              Try again
             </button>
           )}
-        </div>
+
+          {selectedTime && (
+            <section
+              className="booking-confirmation"
+              aria-label="Appointment booking details"
+            >
+              <h3>Confirm visit details</h3>
+
+              <p>
+                <strong>Doctor:</strong> {doctorName}
+              </p>
+
+              <p>
+                <strong>Date and time:</strong>{' '}
+                {selectedDate &&
+                  [
+                    selectedDate.getFullYear(),
+                    String(selectedDate.getMonth() + 1).padStart(2, '0'),
+                    String(selectedDate.getDate()).padStart(2, '0'),
+                  ].join('-')}{' '}
+                at {new Date(selectedTime).toISOString().slice(11, 16)} UTC
+              </p>
+
+              <label>
+                Contact number
+                <input
+                  type="tel"
+                  pattern="\+?[0-9 ()-]{7,24}"
+                  title="Enter 7 to 24 digits, spaces, or phone punctuation."
+                  value={contactNumber}
+                  onChange={(event) => setContactNumber(event.target.value)}
+                  autoComplete="tel"
+                  required
+                />
+              </label>
+
+              <label>
+                Reason for visit (optional)
+                <textarea
+                  value={visitReason}
+                  onChange={(event) => setVisitReason(event.target.value)}
+                  maxLength={500}
+                  rows={3}
+                />
+              </label>
+
+              <fieldset>
+                <legend>Payment</legend>
+
+                <label>
+                  <input
+                    type="radio"
+                    name="payment-method"
+                    checked
+                    readOnly
+                  />
+                  Pay at hospital
+                </label>
+
+                <p>Online payment is not currently available.</p>
+              </fieldset>
+
+              <label className="booking-terms">
+                <input
+                  type="checkbox"
+                  checked={termsAccepted}
+                  onChange={(event) => setTermsAccepted(event.target.checked)}
+                  required
+                />
+                I understand payment is due at the hospital and will contact
+                the clinic if I need to change or cancel.
+              </label>
+
+              <button
+                type="submit"
+                className="btn w-full"
+                disabled={
+                  submitting ||
+                  !contactNumber.trim() ||
+                  !termsAccepted
+                }
+              >
+                {submitting ? 'Booking…' : 'Confirm appointment'}
+              </button>
+            </section>
+          )}
+        </form>
       )}
-    </div>
+    </aside>
   );
+};
+
+SidePanel.propTypes = {
+  doctorId: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+  ]).isRequired,
+  doctorName: PropTypes.string,
 };
 
 export default SidePanel;

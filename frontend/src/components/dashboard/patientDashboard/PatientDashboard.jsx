@@ -69,7 +69,7 @@
 
 
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import Logout from './PatientLogout';
 import { getUserDetails } from '../../../api';
@@ -85,13 +85,10 @@ const PatientDashboard = () => {
     const fetchUserDetails = async () => {
       try {
         const userId = localStorage.getItem('userId');
-        console.log('Fetching user details for ID:', userId);
         const response = await getUserDetails(userId);
-        console.log('User details response:', response.data);
         setUser(response.data);
-      } catch (error) {
-        console.error('Error fetching user details:', error);
-        setError('Failed to fetch user details. Please try again later.');
+      } catch {
+        setError('Failed to load your account. Please sign in again.');
       }
     };
 
@@ -99,11 +96,21 @@ const PatientDashboard = () => {
   }, []);
 
   useEffect(() => {
-    const userId = localStorage.getItem('userId');
-    // checkUser(userId)
-    //   .then(response => console.log('User check result:', response.data))
-    //   .catch(error => console.error('Error checking user:', error));
+    setIsMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const closeOnEscape = (event) => { if (event.key === 'Escape') setIsMenuOpen(false); };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
   }, []);
+
+  useEffect(() => {
+    if (!isMenuOpen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [isMenuOpen]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -120,22 +127,26 @@ const PatientDashboard = () => {
   return (
     <div className="patient-dashboard">
       <header className="dashboard-header">
-        <div className="hamburger" onClick={toggleMenu}>
-          <div className="line"></div>
-          <div className="line"></div>
-          <div className="line"></div>
-        </div>
+        <button type="button" className="hamburger" aria-label={isMenuOpen ? 'Close dashboard navigation' : 'Open dashboard navigation'} aria-controls="patient-dashboard-navigation" aria-expanded={isMenuOpen} onClick={toggleMenu}>
+          <span className="line"></span><span className="line"></span><span className="line"></span>
+        </button>
         <h1 className='hh1'>Patient Dashboard</h1>
         <Logout user={user} />
       </header>
       <div className="dashboard-content">
-        <aside className={`dashboard-sidebar ${isMenuOpen ? 'open' : ''}`}>
-          <nav>
+        {isMenuOpen && <button className="dashboard-scrim" type="button" aria-label="Close dashboard navigation" onClick={() => setIsMenuOpen(false)} />}
+        <aside id="patient-dashboard-navigation" className={`dashboard-sidebar ${isMenuOpen ? 'open' : ''}`}>
+          <div className="dashboard-mobile-nav-heading">
+            <span>Navigation</span>
+            <button type="button" className="dashboard-nav-close" aria-label="Close dashboard navigation" onClick={() => setIsMenuOpen(false)}>Close</button>
+          </div>
+          <nav aria-label="Patient dashboard navigation">
             <ul>
+              <li><Link to="/patient-dashboard" className={location.pathname === '/patient-dashboard' ? 'active' : ''} onClick={() => setIsMenuOpen(false)}>Overview</Link></li>
               <li>
                 <Link 
                   to="/patient-dashboard/profile" 
-                  className={location.pathname.includes('/profile') ? 'active' : ''}
+                  className={location.pathname.includes('/profile') ? 'active' : ''} onClick={() => setIsMenuOpen(false)}
                 >
                   Profile
                 </Link>
@@ -143,9 +154,14 @@ const PatientDashboard = () => {
               <li>
                 <Link 
                   to="/patient-dashboard/appointments" 
-                  className={location.pathname.includes('/appointments') ? 'active' : ''}
+                  className={location.pathname.includes('/appointments') ? 'active' : ''} onClick={() => setIsMenuOpen(false)}
                 >
                   Appointments
+                </Link>
+              </li>
+              <li>
+                <Link to="/patient-dashboard/records" className={location.pathname.includes('/records') ? 'active' : ''} onClick={() => setIsMenuOpen(false)}>
+                  Medical records
                 </Link>
               </li>
             </ul>

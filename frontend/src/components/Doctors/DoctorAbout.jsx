@@ -1,57 +1,27 @@
-import React from 'react';
-import './DoctorAbout.css';  // Import the CSS file
-import { formateDate } from '../../utils/formateDate';  // Import the corrected function
+import PropTypes from 'prop-types';
+import './DoctorAbout.css';
 
-const DoctorAbout = () => {
+export default function DoctorAbout({ doctor }) {
   return (
-    <div className="doctor-about-container">
-      <div>
-        <h3 className="heading">
-          About of <span>Saturn Som</span>
-        </h3>
-        <p className="paragraph">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident id obcaecati nostrum. Doloremque natus provident blanditiis. Esse accusantium maxime ullam nemo deleniti asperiores eum nesciunt!
-        </p>
-      </div>
-
-      <div className="education-section">
-        <h3 className="education-heading">Education</h3>
-        <ul className="education-list">
-          <li className="education-item">
-            <div>
-              <span className="date">{formateDate('2014-09-13')} - {formateDate('2016-09-13')}</span>
-              <p className="degree">PhD in Surgery</p>
-              <p className="degree">Apollo Hospital, India</p>
-            </div>
-          </li>
-
-          <li className="education-item">
-            <div>
-              <span className="date">{formateDate('2010-04-12')}</span>
-              <p className="degree">PhD in Surgery</p>
-              <p className="degree">Apollo Hospital, New York</p>
-            </div>
-          </li>
-        </ul>
-      </div>
-
-      <div className="experience-section">
-        <h3 className="education-heading">Experience</h3>
-        <ul className="experience-list">
-          <li className="experience-item">
-            <span className="role">Sr. Surgeon</span>
-            <p className="degree">Apollo Hospital, New York</p>
-          </li>
-          <li className="experience-item">
-            <span className="role">Sr. Surgeon</span>
-            <p className="degree">Apollo Hospital, New York</p>
-          </li>
-        </ul>
-      </div>
-    </div>
+    <section className="doctor-about-container" aria-labelledby="doctor-about-title">
+      <h2 id="doctor-about-title">About {doctor.name}</h2>
+      <p>Profile information is currently limited to the details provided in the doctor directory.</p>
+      <dl className="doctor-facts">
+        <div><dt>Specialty</dt><dd>{doctor.specialization || 'Not listed'}</dd></div>
+        <div><dt>Practice</dt><dd>{doctor.hospitalName || doctor.hospital || 'Not listed'}</dd></div>
+        {doctor.qualifications && <div><dt>Qualifications</dt><dd>{doctor.qualifications}</dd></div>}
+        {doctor.yearsExperience !== undefined && doctor.yearsExperience !== null && doctor.yearsExperience !== '' && <div><dt>Experience</dt><dd>{doctor.yearsExperience} years</dd></div>}
+        {(doctor.clinicAddress || doctor.city || doctor.stateRegion || doctor.postalCode) && <div><dt>Location</dt><dd>{[doctor.clinicAddress, doctor.city, doctor.stateRegion, doctor.postalCode].filter(Boolean).join(', ')}</dd></div>}
+        {Number(doctor.consultationFee) > 0 && <div><dt>Consultation fee</dt><dd>{Number(doctor.consultationFee).toLocaleString()}</dd></div>}
+        {doctor.consultationModes?.length > 0 && <div><dt>Consultation modes</dt><dd>{doctor.consultationModes.join(', ')}</dd></div>}
+        {doctor.languages?.length > 0 && <div><dt>Languages</dt><dd>{doctor.languages.join(', ')}</dd></div>}
+      </dl>
+      {doctor.biography && <div className="doctor-biography"><h3>About the doctor</h3><p>{doctor.biography}</p></div>}
+      {doctor.expertise?.length > 0 && <div className="doctor-expertise"><h3>Areas of expertise</h3><ul>{doctor.expertise.map((item) => <li key={item}>{item}</li>)}</ul></div>}
+    </section>
   );
 }
 
-export default DoctorAbout;
-
-
+DoctorAbout.propTypes = {
+  doctor: PropTypes.shape({ name: PropTypes.string, specialization: PropTypes.string, hospitalName: PropTypes.string, hospital: PropTypes.string, qualifications: PropTypes.string, yearsExperience: PropTypes.oneOfType([PropTypes.string, PropTypes.number]), clinicAddress: PropTypes.string, city: PropTypes.string, stateRegion: PropTypes.string, postalCode: PropTypes.string, consultationFee: PropTypes.oneOfType([PropTypes.string, PropTypes.number]), consultationModes: PropTypes.arrayOf(PropTypes.string), languages: PropTypes.arrayOf(PropTypes.string), biography: PropTypes.string, expertise: PropTypes.arrayOf(PropTypes.string) }).isRequired,
+};
