@@ -1,10 +1,17 @@
 import axios from 'axios';
 
+const productionApiBase = 'https://new-doctors-appointment.onrender.com/api';
+const localApiBase = 'http://localhost:5000/api';
+const configuredApiBase = import.meta.env.VITE_API_BASE_URL?.trim();
+const isLocalApiBase = (value) => /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::|\/|$)/i.test(value);
+const apiBase = import.meta.env.DEV
+  ? (configuredApiBase || localApiBase)
+  : (configuredApiBase && !isLocalApiBase(configuredApiBase) ? configuredApiBase : productionApiBase);
+const apiOrigin = new URL(apiBase).origin;
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
+  baseURL: apiBase,
   timeout: 15000,
 });
-const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
@@ -38,6 +45,7 @@ export const updateDoctorPhoto = (doctorId, file) => {
   return api.put(`/doctor/profile/${doctorId}/photo`, form);
 };
 export const getDoctorPhotoUrl = (doctorId) => `${apiBase}/doctors/${doctorId}/photo`;
+export const getApiAssetUrl = (path) => new URL(String(path).replace(/^\/+/, ''), `${apiOrigin}/`).toString();
 export const updatePatientProfile = (patientId, profile) => api.put(`/patient/update/${patientId}`, profile);
 export const getDoctorSchedule = (doctorId) => api.get(`/doctor/availability/${doctorId}`).then((response) => response.data);
 export const saveDoctorSchedule = (doctorId, windows) => api.put(`/doctor/availability/${doctorId}`, { windows });
@@ -62,9 +70,9 @@ export const saveMedicalHistory = (history) => api.put('/medical-history', histo
 export const getConsultationNotes = (appointmentId) => api.get(`/appointments/${appointmentId}/notes`);
 export const saveConsultationNotes = (appointmentId, summary) => api.put(`/appointments/${appointmentId}/notes`, { summary });
 export const getDocuments = () => api.get('/documents');
+export const downloadDocument = (documentId) => api.get(`/documents/${documentId}/download`, { responseType: 'blob' });
 export const uploadDocument = (formData, onUploadProgress) => api.post('/documents', formData, { onUploadProgress });
 export const shareDocument = (documentId, doctorId) => api.post(`/documents/${documentId}/share`, { doctorId });
 export const revokeDocumentShare = (documentId, doctorId) => api.delete(`/documents/${documentId}/share/${doctorId}`);
-export const downloadDocument = (documentId) => api.get(`/documents/${documentId}/download`, { responseType: 'blob' });
 export const testDatabaseConnection = () => api.get('/test-connection');
 export default api;

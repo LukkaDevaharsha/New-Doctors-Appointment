@@ -20,6 +20,7 @@ import DoctorDashboard from './components/dashboard/doctorDashboard/DoctorDashbo
 import DoctorProfile from './components/dashboard/doctorDashboard/DoctorProfile.jsx';
 import DoctorAppointments from './components/dashboard/doctorDashboard/DoctorAppointments.jsx';
 import DoctorOverview from './components/dashboard/doctorDashboard/DoctorOverview.jsx';
+import DoctorPatients from './components/dashboard/doctorDashboard/DoctorPatients.jsx';
 
 import PatientDashboard from './components/dashboard/patientDashboard/PatientDashboard.jsx';
 import PatientProfile from './components/dashboard/patientDashboard/PatientProfile.jsx';
@@ -28,6 +29,7 @@ import PatientOverview from './components/dashboard/patientDashboard/PatientOver
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx';
 import VerifyEmail from './components/auth/VerifyEmail.jsx';
 import MedicalRecords from './components/dashboard/patientDashboard/MedicalRecords.jsx';
+import DashboardSettings from './components/dashboard/DashboardSettings.jsx';
 import About from './components/about/About.jsx';
 import ForgotPassword from './components/auth/ForgotPassword.jsx';
 import ResetPassword from './components/auth/ResetPassword.jsx';
@@ -80,7 +82,10 @@ function App() {
         <Route path="/doctor-dashboard" element={<DoctorDashboard />}>
           <Route index element={<DoctorOverview />} />
           <Route path="profile" element={<DoctorProfile />} />
+          <Route path="availability" element={<DoctorProfile />} />
           <Route path="appointments" element={<DoctorAppointments />} />
+          <Route path="patients" element={<DoctorPatients />} />
+          <Route path="settings" element={<DashboardSettings />} />
         </Route>
         </Route>
 
@@ -88,9 +93,11 @@ function App() {
         <Route element={<ProtectedRoute roles={['patient']} />}>
         <Route path="/patient-dashboard" element={<PatientDashboard />}>
           <Route index element={<PatientOverview />} />
+          <Route path="find-doctors" element={<Doctors />} />
           <Route path="profile" element={<PatientProfile />} />
           <Route path="appointments" element={<PatientAppointments />} />
           <Route path="records" element={<MedicalRecords />} />
+          <Route path="settings" element={<DashboardSettings />} />
         </Route>
         </Route>
 

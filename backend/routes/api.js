@@ -6,12 +6,14 @@ const path = require('node:path');
 const fs = require('node:fs/promises');
 const auth = require('../middleware/auth');
 const { requireRole, requireVerified } = require('../middleware/auth');
-const { sendVerificationEmail, sendAppointmentRescheduledEmail, sendPasswordResetEmail, sendAppointmentCancelledEmail, sendAppointmentBookedEmail } = require('../services/email');
+const { sendVerificationEmail, sendAppointmentRescheduledEmail, sendPasswordResetEmail, sendAppointmentCancelledEmail, sendAppointmentBookedEmail, emailErrorDiagnostic } = require('../services/email');
+const { getDailyAppointmentConflict, istDayWindow } = require('../services/appointmentBookingRules');
 const createRateLimit = require('../middleware/rateLimit');
 
 const router = express.Router();
 const authRateLimit = createRateLimit({ windowMs: 15 * 60 * 1000, max: 10 });
-const resendRateLimit = createRateLimit({ windowMs: 15 * 60 * 1000, max: 5 });
+const resendRateLimit = createRateLimit({ windowMs: Number(process.env.RESEND_IP_WINDOW_MS) || 15 * 60 * 1000, max: Number(process.env.RESEND_IP_MAX) || 10, message: 'Too many verification requests from this connection. Please wait before trying again.' });
+const resendEmailRateLimit = createRateLimit({ windowMs: Number(process.env.RESEND_EMAIL_WINDOW_MS) || 60 * 60 * 1000, max: Number(process.env.RESEND_EMAIL_MAX) || 3, keyGenerator: (req) => crypto.createHash('sha256').update(String(req.body?.email || '').trim().toLowerCase()).digest('hex'), message: 'Too many verification emails were requested for this address. Please wait before trying again.' });
 const passwordResetRateLimit = createRateLimit({ windowMs: 15 * 60 * 1000, max: 5 });
 const imageUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 3 * 1024 * 1024 }, fileFilter: (_req, file, cb) => cb(null, ['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) });
 const documentUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: Number(process.env.MAX_DOCUMENT_SIZE_BYTES) || 10 * 1024 * 1024 }, fileFilter: (_req, file, cb) => cb(null, ['application/pdf', 'image/jpeg', 'image/png'].includes(file.mimetype)) });
@@ -24,7 +26,7 @@ const validPhone = (value) => typeof value === 'string' && /^\+?[0-9 ()-]{7,24}$
 const db = (req) => req.app.locals.pool;
 const fail = (res, error, label) => {
   if (error?.code === 'ER_DUP_ENTRY') return res.status(409).json({ message: 'This record already exists or the appointment time is unavailable' });
-  console.error(label, error?.message || error);
+  console.error(label, { code: error?.code || 'UNKNOWN', name: error?.name || 'Error' });
   return res.status(500).json({ message: 'The request could not be completed' });
 };
 function idParam(req, res, next) {
@@ -72,6 +74,18 @@ function dateValue(value) {
   return date;
 }
 function sqlDate(date) { return date.toISOString().slice(0, 23).replace('T', ' '); }
+async function dailyAppointmentConflict(connection, patientId, start, excludedAppointmentId) {
+  const { start: dayStart, end: dayEnd } = istDayWindow(start);
+  const exclude = excludedAppointmentId ? ' AND id<>?' : '';
+  const params = excludedAppointmentId
+    ? [patientId, sqlDate(dayStart), sqlDate(dayEnd), excludedAppointmentId]
+    : [patientId, sqlDate(dayStart), sqlDate(dayEnd)];
+  const [appointments] = await connection.execute(
+    `SELECT patient_id,appointment_at,status FROM appointments WHERE patient_id=? AND appointment_at>=? AND appointment_at<? AND status<>'cancelled'${exclude} FOR UPDATE`,
+    params,
+  );
+  return getDailyAppointmentConflict(appointments, patientId, start);
+}
 async function slotAvailability(connection, doctorId, date, excludedAppointmentId) {
   const stamp = sqlDate(date);
   const [windows] = await connection.execute('SELECT slot_minutes FROM doctor_availability WHERE doctor_id=? AND weekday=DAYOFWEEK(?) - 1 AND TIME(?) >= start_time AND DATE_ADD(TIME(?),INTERVAL slot_minutes MINUTE) <= end_time AND slot_minutes=30 LIMIT 1', [doctorId, stamp, stamp, stamp]);
@@ -179,28 +193,33 @@ router.get('/doctors/:id/availability', idParam, async (req, res) => {
   try {
     const [[doctor]] = await db(req).execute("SELECT id FROM users WHERE id=? AND role='doctor' LIMIT 1", [req.params.id]);
     if (!doctor) return res.status(404).json({ message: 'Doctor not found' });
-    const weekday = new Date(`${date}T00:00:00Z`).getUTCDay();
-    const [windows] = await db(req).execute('SELECT start_time,end_time,slot_minutes FROM doctor_availability WHERE doctor_id=? AND weekday=? ORDER BY start_time', [req.params.id, weekday]);
-    const startOfDay = `${date} 00:00:00.000`;
-    const endOfDay = `${date} 23:59:59.999`;
-    const [appointments] = await db(req).execute("SELECT appointment_at FROM appointments WHERE doctor_id=? AND status IN ('scheduled','completed') AND appointment_at>=? AND appointment_at<=?", [req.params.id, startOfDay, endOfDay]);
+    const dayStart = new Date(`${date}T00:00:00+05:30`);
+    const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+    const utcDates = [...new Set([dayStart.toISOString().slice(0, 10), new Date(dayEnd.getTime() - 1).toISOString().slice(0, 10)])];
+    const utcDays = utcDates.map((utcDate) => ({ date: utcDate, weekday: new Date(`${utcDate}T00:00:00Z`).getUTCDay() }));
+    const [windows] = await db(req).execute('SELECT weekday,start_time,end_time,slot_minutes FROM doctor_availability WHERE doctor_id=? AND weekday IN (?,?) ORDER BY weekday,start_time', [req.params.id, ...utcDays.map((day) => day.weekday)]);
+    const startOfDay = sqlDate(dayStart);
+    const endOfDay = sqlDate(dayEnd);
+    const [appointments] = await db(req).execute("SELECT appointment_at FROM appointments WHERE doctor_id=? AND status IN ('scheduled','completed') AND appointment_at>=? AND appointment_at<?", [req.params.id, startOfDay, endOfDay]);
     const [blocks] = await db(req).execute('SELECT starts_at,ends_at FROM doctor_time_blocks WHERE doctor_id=? AND starts_at<? AND ends_at>? ORDER BY starts_at', [req.params.id, endOfDay, startOfDay]);
     const booked = new Set(appointments.map((item) => item.appointment_at instanceof Date ? item.appointment_at.getTime() : new Date(`${String(item.appointment_at).replace(' ', 'T')}Z`).getTime()));
     const blocked = blocks.map((item) => ({ start: item.starts_at instanceof Date ? item.starts_at.getTime() : new Date(`${String(item.starts_at).replace(' ', 'T')}Z`).getTime(), end: item.ends_at instanceof Date ? item.ends_at.getTime() : new Date(`${String(item.ends_at).replace(' ', 'T')}Z`).getTime() }));
     const slots = [];
     let eligible = 0;
-    for (const window of windows) {
-      const [startHour, startMinute] = String(window.start_time).slice(0, 5).split(':').map(Number);
-      const [endHour, endMinute] = String(window.end_time).slice(0, 5).split(':').map(Number);
-      const start = Date.parse(`${date}T${String(startHour).padStart(2, '0')}:${String(startMinute).padStart(2, '0')}:00Z`);
-      const end = Date.parse(`${date}T${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}:00Z`);
+    for (const day of utcDays) for (const window of windows.filter((item) => Number(item.weekday) === day.weekday)) {
+      const startTime = String(window.start_time).slice(0, 5);
+      const endTime = String(window.end_time).slice(0, 5);
+      const start = Date.parse(`${day.date}T${startTime === '24:00' ? '00:00' : startTime}:00Z`) + (startTime === '24:00' ? 24 * 60 * 60 * 1000 : 0);
+      const end = Date.parse(`${day.date}T${endTime === '24:00' ? '00:00' : endTime}:00Z`) + (endTime === '24:00' ? 24 * 60 * 60 * 1000 : 0);
       for (let time = start; time + Number(window.slot_minutes) * 60000 <= end; time += Number(window.slot_minutes) * 60000) {
+        if (time < dayStart.getTime() || time >= dayEnd.getTime()) continue;
         const isBlocked = blocked.some((range) => time < range.end && time + Number(window.slot_minutes) * 60000 > range.start);
         if (time > Date.now() && !isBlocked) eligible += 1;
         const status = time <= Date.now() || isBlocked ? 'unavailable' : booked.has(time) ? 'booked' : 'available';
         slots.push({ startsAt: new Date(time).toISOString(), status });
       }
     }
+    slots.sort((a, b) => a.startsAt.localeCompare(b.startsAt));
     const status = slots.some((slot) => slot.status === 'available') ? 'available' : eligible > 0 ? 'fully-booked' : 'unavailable';
     return res.json({ date, timezone: 'UTC', status, slots });
   } catch (error) { return fail(res, error, 'Doctor availability lookup failed'); }
@@ -244,9 +263,14 @@ router.post('/register', authRateLimit, imageUpload.single('image'), async (req,
     await fs.writeFile(path.join(privateRoot, storageId), req.file.buffer, { flag: 'wx', mode: 0o600 });
     const values = [role, name.trim(), normalizedEmail, await bcrypt.hash(password, 12), String(contactNumber || '').trim(), Number(age), String(gender || '').trim(), role === 'patient' ? String(req.body.address).trim() : null, role === 'doctor' ? String(req.body.specialization).trim() : null, role === 'doctor' ? String(req.body.hospitalName).trim() : null, storageId, tokenDigest(token), new Date(Date.now() + 24 * 60 * 60 * 1000)];
     const [result] = await db(req).execute('INSERT INTO users (role,name,email,password_hash,contact_number,age,gender,address,specialization,hospital_name,image_storage_id,email_verified,verification_token_hash,verification_expires_at,verification_sent_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,FALSE,?,?,UTC_TIMESTAMP(3))', values);
+    let verificationEmailSent = true;
     try { await sendVerificationEmail(normalizedEmail, token); }
-    catch (error) { console.error('Verification delivery failed; account can request a resend:', error?.message || error); }
-    return res.status(201).json({ success: true, message: 'Account created. Check your email to verify it.', userId: String(result.insertId) });
+    catch (error) {
+      verificationEmailSent = false;
+      await db(req).execute('UPDATE users SET verification_token_hash=NULL,verification_expires_at=NULL,verification_sent_at=NULL WHERE id=? AND verification_token_hash=?', [result.insertId, tokenDigest(token)]).catch(() => {});
+      console.error('Verification email delivery failed after account creation:', emailErrorDiagnostic(error));
+    }
+    return res.status(201).json({ success: true, verificationEmailSent, message: verificationEmailSent ? 'Account created. Check your email to verify it.' : 'Account created, but the verification email could not be sent. Use the resend form to try again.', userId: String(result.insertId) });
   } catch (error) {
     await fs.unlink(path.join(privateRoot, storageId)).catch(() => {});
     if (error?.code === 'ER_DUP_ENTRY') return res.status(409).json({ message: 'An account with this email address already exists' });
@@ -262,7 +286,7 @@ router.post('/email/verify', async (req, res) => {
     return result.affectedRows ? res.json({ message: 'Your email has been verified. You can now sign in.' }) : res.status(400).json({ message: 'This verification link is invalid, expired, or already used.' });
   } catch (error) { return fail(res, error, 'Email verification failed'); }
 });
-router.post('/email/resend', resendRateLimit, async (req, res) => {
+router.post('/email/resend', resendRateLimit, resendEmailRateLimit, async (req, res) => {
   const email = String(req.body?.email || '').trim().toLowerCase();
   const generic = { message: 'If an account needs verification, a new email will be sent shortly.' };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.json(generic);
@@ -271,7 +295,14 @@ router.post('/email/resend', resendRateLimit, async (req, res) => {
     if (!rows.length) return res.json(generic);
     const token = crypto.randomBytes(32).toString('hex');
     const [result] = await db(req).execute('UPDATE users SET verification_token_hash=?,verification_expires_at=DATE_ADD(UTC_TIMESTAMP(3),INTERVAL 24 HOUR),verification_sent_at=UTC_TIMESTAMP(3) WHERE id=? AND email_verified=FALSE AND (verification_sent_at IS NULL OR verification_sent_at<=DATE_SUB(UTC_TIMESTAMP(3),INTERVAL 60 SECOND))', [tokenDigest(token), rows[0].id]);
-    if (result.affectedRows) await sendVerificationEmail(rows[0].email, token);
+    if (result.affectedRows) {
+      try { await sendVerificationEmail(rows[0].email, token); }
+      catch (error) {
+        await db(req).execute('UPDATE users SET verification_token_hash=NULL,verification_expires_at=NULL,verification_sent_at=NULL WHERE id=? AND verification_token_hash=?', [rows[0].id, tokenDigest(token)]).catch(() => {});
+        console.error('Verification resend delivery failed:', emailErrorDiagnostic(error));
+        return res.status(503).json({ message: 'The verification email could not be sent right now. Please try again shortly.' });
+      }
+    }
     return res.json(generic);
   } catch (error) { return fail(res, error, 'Verification email resend failed'); }
 });
@@ -421,7 +452,7 @@ router.put('/doctor/availability/:id', auth, requireRole('doctor'), requireVerif
     const slotMinutes = Number(item.slotMinutes || 30);
     const startTime = String(item.startTime || '');
     const endTime = String(item.endTime || '');
-    if (!Number.isInteger(weekday) || weekday < 0 || weekday > 6 || !/^([01]\d|2[0-3]):[0-5]\d$/.test(startTime) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(endTime) || startTime >= endTime || slotMinutes !== 30) return res.status(400).json({ message: 'Each window needs a valid weekday, time range, and a 30-minute appointment duration' });
+    if (!Number.isInteger(weekday) || weekday < 0 || weekday > 6 || !/^([01]\d|2[0-3]):[0-5]\d$/.test(startTime) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(endTime) && endTime !== '24:00' || startTime >= endTime || slotMinutes !== 30) return res.status(400).json({ message: 'Each window needs a valid weekday, time range, and a 30-minute appointment duration' });
     normalized.push({ weekday, startTime, endTime, slotMinutes });
   }
   for (let i = 0; i < normalized.length; i++) for (let j = i + 1; j < normalized.length; j++) {
@@ -516,6 +547,8 @@ async function createAppointment(req, res) {
     if (!patients.length) { await connection.rollback(); return res.status(403).json({ message: 'A verified patient account is required to book' }); }
     const contact = requestedContact || String(patients[0].contact_number || '').trim();
     if (!validPhone(contact)) { await connection.rollback(); return res.status(400).json({ message: 'Add a valid contact number to your profile or enter one for this booking' }); }
+    const dailyConflict = await dailyAppointmentConflict(connection, req.user.userId, start);
+    if (dailyConflict) { await connection.rollback(); return res.status(409).json({ message: dailyConflict }); }
     const [doctors] = await connection.execute("SELECT id,name,email FROM users WHERE id=? AND role='doctor' FOR UPDATE", [doctorId]);
     if (!doctors.length) { await connection.rollback(); return res.status(404).json({ message: 'Doctor not found' }); }
     const availability = await slotAvailability(connection, doctorId, start, null);
@@ -568,8 +601,13 @@ router.patch('/appointments/:id/reschedule', auth, requireVerified, idParam, asy
   let doctorEmail = '';
   try {
     await connection.beginTransaction();
-    const [initialRows] = await connection.execute(`SELECT id,doctor_id FROM appointments WHERE id=? AND ${ownerColumn}=? AND status='scheduled' AND appointment_at>UTC_TIMESTAMP(3)`, [req.params.id, req.user.userId]);
+    const [initialRows] = await connection.execute(`SELECT id,patient_id,doctor_id FROM appointments WHERE id=? AND ${ownerColumn}=? AND status='scheduled' AND appointment_at>UTC_TIMESTAMP(3)`, [req.params.id, req.user.userId]);
     if (!initialRows.length) { await connection.rollback(); return res.status(404).json({ message: 'Appointment not found or no longer reschedulable' }); }
+    const patientId = initialRows[0].patient_id;
+    const [lockedPatients] = await connection.execute("SELECT id FROM users WHERE id=? AND role='patient' FOR UPDATE", [patientId]);
+    if (!lockedPatients.length) { await connection.rollback(); return res.status(404).json({ message: 'Patient account not found' }); }
+    const dailyConflict = await dailyAppointmentConflict(connection, patientId, date, req.params.id);
+    if (dailyConflict) { await connection.rollback(); return res.status(409).json({ message: dailyConflict }); }
     await connection.execute('SELECT id FROM users WHERE id=? FOR UPDATE', [initialRows[0].doctor_id]);
     const [rows] = await connection.execute(`SELECT id,doctor_id,patient_id,appointment_at FROM appointments WHERE id=? AND ${ownerColumn}=? AND status='scheduled' AND appointment_at>UTC_TIMESTAMP(3) FOR UPDATE`, [req.params.id, req.user.userId]);
     if (!rows.length) { await connection.rollback(); return res.status(404).json({ message: 'Appointment changed while you were rescheduling it' }); }

@@ -11,7 +11,9 @@ const app = express();
 const port = Number(process.env.PORT) || 5000;
 const appRoot = path.resolve(__dirname, '..');
 app.disable('x-powered-by');
-app.use(cors({ origin: process.env.FRONTEND_ORIGIN ? process.env.FRONTEND_ORIGIN.split(',').map((item) => item.trim()) : ['http://localhost:5173'], methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], allowedHeaders: ['Content-Type', 'Authorization'] }));
+// Render terminates TLS and forwards the client address in X-Forwarded-For.
+app.set('trust proxy', process.env.TRUST_PROXY_HOPS === undefined ? 1 : Number(process.env.TRUST_PROXY_HOPS));
+app.use(cors({ origin: process.env.FRONTEND_ORIGIN ? process.env.FRONTEND_ORIGIN.split(',').map((item) => item.trim().replace(/\/$/, '')) : ['http://localhost:5173', 'https://new-doctors-appointment-lw1hfg7og-devaharsha119-3699.vercel.app'], methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], allowedHeaders: ['Content-Type', 'Authorization'] }));
 app.use(express.json({ limit: '100kb' }));
 app.use('/api', apiRoutes);
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));

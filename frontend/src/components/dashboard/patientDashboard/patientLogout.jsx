@@ -32,6 +32,7 @@
 
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
+import { getApiAssetUrl } from '../../../api';
 import useAuth from '../../../auth/useAuth';
 import './PatientLogout.css';
 
@@ -48,7 +49,7 @@ const PatientLogout = ({ user }) => {
     <div className="logout">
       <div className="logout-info">
         {user && user.imagePath ? (
-          <img src={`http://localhost:5000/${user.imagePath}`} alt="Profile" className="profile-image" />
+          <img src={getApiAssetUrl(user.imagePath)} alt="Profile" className="profile-image" />
         ) : (
           <div className="default-avatar">{user ? user.name.charAt(0) : ''}</div>
         )}

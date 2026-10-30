@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { cancelAppointment, getAppointmentRescheduleHistory, getDoctorAvailability, getPatientAppointments, getConsultationNotes, rescheduleAppointment } from '../../../api';
+import { formatIstDateTime, formatIstTime, getIstDateKey } from '../../../utils/istDateTime';
 import './PatientAppointments.css';
 
 export default function PatientAppointments() {
@@ -73,16 +74,16 @@ export default function PatientAppointments() {
       const date = new Date(app.date);
       const status = app.status || 'scheduled';
       return <article className="appointment-card patient-appointment-card" key={id}>
-        <div className="appointment-card-top"><div><p className="eyebrow">{date.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' })}</p><h3>{app.doctorName || 'Doctor'}</h3></div><span className={`status-badge status-${status}`}>{status}</span></div>
-        <p><strong>Time:</strong> {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UTC</p>
+        <div className="appointment-card-top"><div><p className="eyebrow">{formatIstDateTime(date)}</p><h3>{app.doctorName || 'Doctor'}</h3></div><span className={`status-badge status-${status}`}>{status}</span></div>
+        <p><strong>Time:</strong> {formatIstTime(date)}</p>
         <p><strong>Payment:</strong> {app.paymentMethod === 'pay_at_hospital' ? 'Pay at hospital' : app.paymentMethod} · {app.paymentStatus || 'pending'}</p>
         {app.visitReason && <p><strong>Reason for visit:</strong> {app.visitReason}</p>}
         {status === 'scheduled' && <div className="patient-appointment-actions"><button type="button" className="btn-secondary" onClick={() => cancel(id)} disabled={busyId === id}>{busyId === id ? 'Updating…' : 'Cancel appointment'}</button><button type="button" className="btn-secondary" onClick={() => { setRescheduleDates((current) => ({ ...current, [id]: '' })); setAvailableSlots((current) => ({ ...current, [id]: [] })); }}>Choose a new time</button></div>}
-        {status === 'scheduled' && <div className="patient-reschedule-form"><label>New date (UTC)<input type="date" min={new Date().toISOString().slice(0, 10)} value={rescheduleDates[id] || ''} onChange={(event) => loadSlots(event, id)} /></label>{availableSlots[id]?.length > 0 && <label>Open time<select value={selectedSlots[id] || ''} onChange={(event) => setSelectedSlots((current) => ({ ...current, [id]: event.target.value }))}><option value="">Choose an available time</option>{availableSlots[id].map((slot) => <option key={slot.startsAt} value={slot.startsAt}>{new Date(slot.startsAt).toISOString().slice(11, 16)}</option>)}</select></label>}<label>Reason (optional)<input maxLength="500" value={reasons[id] || ''} onChange={(event) => setReasons((current) => ({ ...current, [id]: event.target.value }))} /></label>{selectedSlots[id] && <button type="button" onClick={() => reschedule(id)} disabled={busyId === id}>{busyId === id ? 'Rescheduling…' : 'Confirm reschedule'}</button>}</div>}
+        {status === 'scheduled' && <div className="patient-reschedule-form"><label>New date (IST)<input type="date" min={getIstDateKey(new Date())} value={rescheduleDates[id] || ''} onChange={(event) => loadSlots(event, id)} /></label>{availableSlots[id]?.length > 0 && <label>Open time<select value={selectedSlots[id] || ''} onChange={(event) => setSelectedSlots((current) => ({ ...current, [id]: event.target.value }))}><option value="">Choose an available time</option>{availableSlots[id].map((slot) => <option key={slot.startsAt} value={slot.startsAt}>{formatIstTime(slot.startsAt)}</option>)}</select></label>}<label>Reason (optional)<input maxLength="500" value={reasons[id] || ''} onChange={(event) => setReasons((current) => ({ ...current, [id]: event.target.value }))} /></label>{selectedSlots[id] && <button type="button" onClick={() => reschedule(id)} disabled={busyId === id}>{busyId === id ? 'Rescheduling…' : 'Confirm reschedule'}</button>}</div>}
         {status === 'completed' && <button type="button" className="btn-secondary" onClick={() => loadSummary(id)}>View visit summary</button>}
         {summaries[id] && <p className="visit-summary">{summaries[id]}</p>}
         <button type="button" className="text-button history-toggle" onClick={() => loadHistory(id)}>View rescheduling history</button>
-        {histories[id]?.length > 0 && <ul className="reschedule-history">{histories[id].map((entry, index) => <li key={`${entry.createdAt}-${index}`}><strong>{new Date(entry.rescheduledAt).toLocaleString(undefined, { timeZone: 'UTC' })} UTC</strong><span>Changed by {entry.actorRole}{entry.reason ? ` · ${entry.reason}` : ''}</span></li>)}</ul>}
+        {histories[id]?.length > 0 && <ul className="reschedule-history">{histories[id].map((entry, index) => <li key={`${entry.createdAt}-${index}`}><strong>{formatIstDateTime(entry.rescheduledAt)}</strong><span>Changed by {entry.actorRole}{entry.reason ? ` · ${entry.reason}` : ''}</span></li>)}</ul>}
         {histories[id]?.length === 0 && <p className="history-empty">No rescheduling history.</p>}
       </article>;
     })}</div>}

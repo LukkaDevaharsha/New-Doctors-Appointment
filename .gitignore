@@ -5,3 +5,4 @@
 **/ca.pem
 aiven-schema-backup.sql
 *.env.backup
+backend/private-uploads/

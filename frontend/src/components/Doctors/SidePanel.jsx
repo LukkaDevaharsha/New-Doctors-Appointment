@@ -4,6 +4,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
+import { dateAtLocalNoon, formatIstDateTime, formatIstTime, getIstDateKey } from '../../utils/istDateTime';
 import {
   addAppointment,
   getDoctorAvailability,
@@ -73,11 +74,7 @@ const SidePanel = ({ doctorId, doctorName = 'Doctor' }) => {
     setAvailabilityError('');
     setSlots([]);
 
-    const dateKey = [
-      date.getFullYear(),
-      String(date.getMonth() + 1).padStart(2, '0'),
-      String(date.getDate()).padStart(2, '0'),
-    ].join('-');
+    const dateKey = getIstDateKey(date);
 
     try {
       const result = await getDoctorAvailability(doctorId, dateKey);
@@ -157,7 +154,7 @@ const SidePanel = ({ doctorId, doctorName = 'Doctor' }) => {
 
       <h2>Schedule a visit</h2>
 
-      <p>Choose an open appointment time. All times are shown in UTC.</p>
+      <p>Choose an open appointment time. Dates and times are shown in India Standard Time.</p>
 
       {!user && (
         <p className="booking-note">
@@ -206,7 +203,7 @@ const SidePanel = ({ doctorId, doctorName = 'Doctor' }) => {
             selected={selectedDate}
             onChange={loadAvailability}
             inline
-            minDate={new Date()}
+            minDate={dateAtLocalNoon(getIstDateKey(new Date()))}
           />
 
           {availabilityState === 'loading' && (
@@ -233,7 +230,7 @@ const SidePanel = ({ doctorId, doctorName = 'Doctor' }) => {
 
           {slots.some((slot) => slot.status === 'available') && (
             <fieldset className="available-slots">
-              <legend>Available times · UTC</legend>
+              <legend>Available times · IST</legend>
 
               <div className="slot-grid">
                 {slots.map((slot) => (
@@ -247,9 +244,7 @@ const SidePanel = ({ doctorId, doctorName = 'Doctor' }) => {
                     aria-pressed={selectedTime === slot.startsAt}
                     onClick={() => setSelectedTime(slot.startsAt)}
                   >
-                    {new Date(slot.startsAt)
-                      .toISOString()
-                      .slice(11, 16)}
+                    {formatIstTime(slot.startsAt)}
                   </button>
                 ))}
               </div>
@@ -278,14 +273,7 @@ const SidePanel = ({ doctorId, doctorName = 'Doctor' }) => {
               </p>
 
               <p>
-                <strong>Date and time:</strong>{' '}
-                {selectedDate &&
-                  [
-                    selectedDate.getFullYear(),
-                    String(selectedDate.getMonth() + 1).padStart(2, '0'),
-                    String(selectedDate.getDate()).padStart(2, '0'),
-                  ].join('-')}{' '}
-                at {new Date(selectedTime).toISOString().slice(11, 16)} UTC
+                <strong>Date and time:</strong>{' '}{formatIstDateTime(selectedTime)}
               </p>
 
               <label>

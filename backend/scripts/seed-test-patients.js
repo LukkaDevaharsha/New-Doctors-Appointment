@@ -9,7 +9,9 @@ const express = require('express');
 const apiRoutes = require('../routes/api');
 const { createPool } = require('../db');
 
-const TARGET_DATABASE = 'doctors_appointment_db';
+const TARGET_DATABASE = 'defaultdb';
+const EXPECTED_HOST = 'doctor-appointment-db-1';
+const EXPECTED_AIVEN_HOST = 'doctor-appointment-db-devaharsha119-cfe2.a.aivencloud.com';
 const TEST_PASSWORD = process.env.UI_TEST_PATIENT_PASSWORD;
 const patients = [
   { name: 'UI Test Patient 01', email: 'ui-test-patient-01@example.test', age: 34, gender: 'female', address: 'Test-only address, 1 Clinic Way' },
@@ -36,29 +38,61 @@ const historyByEmail = {
 };
 
 function ensureDevelopmentTarget() {
-  if (process.env.NODE_ENV !== 'development') throw new Error('Refusing to seed unless NODE_ENV=development.');
-  if (process.env.MYSQL_DATABASE !== TARGET_DATABASE) throw new Error(`Refusing to seed: MYSQL_DATABASE must be ${TARGET_DATABASE}.`);
-  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) throw new Error('JWT_SECRET must be configured with at least 32 characters to verify login.');
-  if (typeof TEST_PASSWORD !== 'string' || TEST_PASSWORD.length < 10 || TEST_PASSWORD.length > 128 || !/[a-z]/.test(TEST_PASSWORD) || !/[A-Z]/.test(TEST_PASSWORD) || !/\d/.test(TEST_PASSWORD) || !/[^A-Za-z0-9]/.test(TEST_PASSWORD)) throw new Error('Set UI_TEST_PATIENT_PASSWORD to a 10–128 character local test password with upper/lowercase, number, and symbol characters.');
+  if (process.env.NODE_ENV !== 'development') throw safeError('NODE_ENV must be set to development.');
+  if (process.env.MYSQL_DATABASE !== TARGET_DATABASE) throw safeError('MYSQL_DATABASE must be defaultdb.');
+  if (process.env.MYSQL_HOST !== EXPECTED_AIVEN_HOST) throw safeError('MYSQL_HOST does not match the expected Aiven hostname.');
+  if (!process.env.MYSQL_USER) throw safeError('MYSQL_USER is not set.');
+  if (!process.env.MYSQL_PASSWORD) throw safeError('MYSQL_PASSWORD is not set.');
+  if (!process.env.MYSQL_SSL_CA) throw safeError('MYSQL_SSL_CA is not set; Aiven TLS requires a CA certificate file path.');
+  if (process.env.MYSQL_PORT && (!Number.isInteger(Number(process.env.MYSQL_PORT)) || Number(process.env.MYSQL_PORT) < 1 || Number(process.env.MYSQL_PORT) > 65535)) throw safeError('MYSQL_PORT must be a valid TCP port number when provided.');
+  try {
+    const ca = require('node:fs').readFileSync(process.env.MYSQL_SSL_CA, 'utf8');
+    if (!/-----BEGIN CERTIFICATE-----/.test(ca)) throw new Error('not PEM');
+  } catch {
+    throw safeError('MYSQL_SSL_CA must point to a readable PEM certificate file. The configured path and certificate contents were suppressed.');
+  }
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) throw safeError('JWT_SECRET must be configured with at least 32 characters to verify login.');
+  if (!process.argv.includes('--confirm-aiven-write')) throw safeError('Confirmation flag missing. No records changed; pass --confirm-aiven-write explicitly to authorize the seed.');
+  if (typeof TEST_PASSWORD !== 'string' || TEST_PASSWORD.length < 10 || TEST_PASSWORD.length > 128 || !/[a-z]/.test(TEST_PASSWORD) || !/[A-Z]/.test(TEST_PASSWORD) || !/\d/.test(TEST_PASSWORD) || !/[^A-Za-z0-9]/.test(TEST_PASSWORD)) throw safeError('UI_TEST_PATIENT_PASSWORD must be set to 10-128 characters with uppercase, lowercase, a number, and a symbol.');
+}
+
+function safeError(message) {
+  const error = new Error(message);
+  error.safeDiagnostic = true;
+  return error;
+}
+
+async function verifyAivenTarget(pool) {
+  let rows;
+  try {
+    [rows] = await pool.execute('SELECT DATABASE() AS database_name, @@hostname AS server_hostname');
+  } catch {
+    throw safeError('Could not query the connected MySQL server. Check Aiven reachability, credentials, port, and CA configuration; low-level details were suppressed.');
+  }
+  if (rows[0]?.database_name !== TARGET_DATABASE) throw safeError('Connected MySQL database is not defaultdb. No records were changed.');
+  if (rows[0]?.server_hostname !== EXPECTED_HOST) throw safeError('Connected MySQL server identity does not match the expected Aiven server. No records were changed.');
 }
 
 async function checkSchema(pool) {
+  await verifyAivenTarget(pool);
   const required = [
     'id', 'role', 'name', 'email', 'password_hash', 'contact_number', 'age',
     'gender', 'address', 'email_verified', 'verification_token_hash',
     'verification_expires_at', 'verification_sent_at',
   ];
-  const [columns] = await pool.execute('SHOW COLUMNS FROM users');
+  let columns;
+  try { [columns] = await pool.execute('SHOW COLUMNS FROM users'); }
+  catch { throw safeError('Could not inspect the users table after Aiven target verification. Check that the schema exists and the database user has read permission.'); }
   const found = new Set(columns.map((column) => column.Field));
   const missing = required.filter((column) => !found.has(column));
-  if (missing.length) throw new Error(`Existing users table is incompatible; missing required columns: ${missing.join(', ')}. No data was changed.`);
+  if (missing.length) throw safeError(`Existing users table is incompatible; missing required columns: ${missing.join(', ')}. No data was changed.`);
   const historyRequired = ['patient_id', 'allergies', 'conditions_json', 'medications', 'surgeries', 'notes', 'created_by', 'updated_by'];
-  const [historyColumns] = await pool.execute('SHOW COLUMNS FROM patient_medical_history');
+  let historyColumns;
+  try { [historyColumns] = await pool.execute('SHOW COLUMNS FROM patient_medical_history'); }
+  catch { throw safeError('Could not inspect patient_medical_history after Aiven target verification. Check that the patient history migration has been applied.'); }
   const historyFound = new Set(historyColumns.map((column) => column.Field));
   const missingHistory = historyRequired.filter((column) => !historyFound.has(column));
-  if (missingHistory.length) throw new Error(`Existing patient_medical_history table is incompatible; missing columns: ${missingHistory.join(', ')}. No data was changed.`);
-  const [rows] = await pool.execute('SELECT DATABASE() AS database_name');
-  if (rows[0]?.database_name !== TARGET_DATABASE) throw new Error(`Connected database is not ${TARGET_DATABASE}. No data was changed.`);
+  if (missingHistory.length) throw safeError(`Existing patient_medical_history table is incompatible; missing columns: ${missingHistory.join(', ')}. No data was changed.`);
 }
 
 async function insertPatients(pool) {
@@ -68,23 +102,24 @@ async function insertPatients(pool) {
     await connection.beginTransaction();
     const placeholders = patients.map(() => '?').join(',');
     const [existing] = await connection.execute(
-      `SELECT id,role,name,email,password_hash,email_verified FROM users WHERE email IN (${placeholders})`,
+      `SELECT id,role,name,email,password_hash,email_verified FROM users WHERE email IN (${placeholders}) FOR UPDATE`,
       patients.map((patient) => patient.email),
     );
     const byEmail = new Map(existing.map((row) => [row.email.toLowerCase(), row]));
 
-    // Never adopt or mutate a matching address that is not already this exact verified seed account.
+    const statuses = new Map();
+    // Existing accounts are read only; compare the configured password without changing it.
     for (const patient of patients) {
       const row = byEmail.get(patient.email);
       if (!row) continue;
-      if (row.role !== 'patient' || row.name !== patient.name || !Boolean(row.email_verified)
-        || !(await bcrypt.compare(TEST_PASSWORD, row.password_hash))) {
-        throw new Error(`Existing account conflicts with the test seed address ${patient.email}; no data was changed.`);
-      }
+      const matches = row.role === 'patient' && row.name === patient.name && Boolean(row.email_verified)
+        && await bcrypt.compare(TEST_PASSWORD, row.password_hash || '');
+      statuses.set(patient.email, matches ? 'login-testable-existing' : 'existing-account-not-login-testable');
     }
 
     for (const patient of patients) {
       let row = byEmail.get(patient.email);
+      if (row) continue;
       if (!row) {
         const passwordHash = await bcrypt.hash(TEST_PASSWORD, 12);
         const [result] = await connection.execute(
@@ -96,6 +131,7 @@ async function insertPatients(pool) {
         );
         row = { id: result.insertId, role: 'patient', email_verified: 1 };
         created.push(patient.email);
+        statuses.set(patient.email, 'created-login-testable');
       }
 
       const history = historyByEmail[patient.email];
@@ -109,7 +145,7 @@ async function insertPatients(pool) {
       }
     }
     await connection.commit();
-    return created;
+    return { created, statuses };
   } catch (error) {
     await connection.rollback();
     throw error;
@@ -118,17 +154,14 @@ async function insertPatients(pool) {
   }
 }
 
-async function verifySeed(pool) {
+async function verifySeed(pool, statuses) {
   const placeholders = patients.map(() => '?').join(',');
   const [rows] = await pool.execute(
     `SELECT id,role,email,email_verified,password_hash FROM users WHERE email IN (${placeholders}) ORDER BY email`,
     patients.map((patient) => patient.email),
   );
-  if (rows.length !== patients.length || rows.some((row) => row.role !== 'patient' || !Boolean(row.email_verified))) {
-    throw new Error('Seed verification failed: expected five verified patient accounts.');
-  }
   for (const row of rows) {
-    if (!(await bcrypt.compare(TEST_PASSWORD, row.password_hash))) throw new Error(`Password verification failed for ${row.email}.`);
+    if (row.role === 'patient' && Boolean(row.email_verified) && await bcrypt.compare(TEST_PASSWORD, row.password_hash || '') && !statuses.has(row.email)) statuses.set(row.email, 'login-testable-existing');
   }
   return rows;
 }
@@ -158,25 +191,41 @@ async function verifyLogin(pool, email) {
   }
 }
 
-async function main() {
-  ensureDevelopmentTarget();
-  const pool = createPool();
-  try {
-    await checkSchema(pool);
-    const created = await insertPatients(pool);
-    const accounts = await verifySeed(pool);
-    await verifyLogin(pool, patients[0].email);
-    console.log(`Verified ${accounts.length} test patient accounts; created ${created.length} on this run.`);
-    for (const row of accounts) console.log(`${row.email} | role=${row.role} | email_verified=1`);
-    console.log('Login with the password supplied in UI_TEST_PATIENT_PASSWORD.');
-    console.log('Existing login API test: passed for UI Test Patient 01. No verification email was sent.');
-    console.log('No appointments were inserted; the seed avoids attaching test bookings to existing doctors.');
-  } finally {
-    await pool.end();
+async function runStage(label, action) {
+  try { return await action(); }
+  catch (error) {
+    if (error?.safeDiagnostic) throw error;
+    throw safeError(`${label} failed. Sensitive low-level details were suppressed.`);
   }
 }
 
-main().catch((error) => {
-  console.error(`Test patient seed stopped safely: ${error.message}`);
+async function main() {
+  let pool;
+  try {
+    await runStage('Startup configuration validation', async () => ensureDevelopmentTarget());
+    pool = await runStage('MySQL pool configuration', async () => createPool());
+    await runStage('Aiven connection, target verification, and schema validation', () => checkSchema(pool));
+    const { created, statuses } = await runStage('Synthetic patient seed transaction', () => insertPatients(pool));
+    const accounts = await runStage('Seed verification', () => verifySeed(pool, statuses));
+    const loginTested = new Set();
+    for (const patient of patients) {
+      if (statuses.get(patient.email) === 'created-login-testable' || statuses.get(patient.email) === 'login-testable-existing') {
+        await runStage(`Patient login check for ${patient.email}`, () => verifyLogin(pool, patient.email));
+        loginTested.add(patient.email);
+      }
+    }
+    console.log(`Found ${accounts.length} matching test seed addresses; created ${created.length} on this run.`);
+    for (const patient of patients) console.log(`${patient.email} | ${statuses.get(patient.email) || 'account-not-found'} | ${loginTested.has(patient.email) ? 'login test passed' : 'login cannot be tested with configured test password'}`);
+    console.log('Patient login API checks completed without sending verification email.');
+    console.log('No appointments were inserted; the seed avoids attaching test bookings to existing doctors.');
+  } finally {
+    if (pool) await pool.end();
+  }
+}
+
+if (require.main === module) main().catch((error) => {
+  console.error(error?.safeDiagnostic ? error.message : 'Patient seed stopped at an unexpected stage. Sensitive low-level details were suppressed.');
   process.exitCode = 1;
 });
+
+module.exports = { TARGET_DATABASE, EXPECTED_HOST, patients, ensureDevelopmentTarget, checkSchema, insertPatients, verifySeed };

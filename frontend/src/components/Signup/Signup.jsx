@@ -28,7 +28,7 @@ export default function Signup() {
     formData.set('image', image);
     try {
       const { data } = await registerUser(formData);
-      if (data.success) navigate(`/verify-email?email=${encodeURIComponent(values.email.trim())}`);
+      if (data.success) navigate(`/verify-email?email=${encodeURIComponent(values.email.trim())}`, { state: { notice: data.message } });
       else setError(data.message || 'Registration could not be completed.');
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'We could not create your account. Please try again.');

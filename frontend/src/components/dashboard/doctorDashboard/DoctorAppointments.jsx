@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
-import { cancelAppointment, completeAppointment, getDoctorAppointments, getDoctorAvailability, getDocuments, getPatientMedicalHistory, rescheduleAppointment, saveConsultationNotes } from '../../../api';
+import { useOutletContext, useSearchParams } from 'react-router-dom';
+import { cancelAppointment, completeAppointment, downloadDocument, getDoctorAppointments, getDoctorAvailability, getDocuments, getPatientMedicalHistory, rescheduleAppointment, saveConsultationNotes } from '../../../api';
+import { formatIstDateTime, formatIstTime, getIstDateKey } from '../../../utils/istDateTime';
 import './DoctorAppointments.css';
 
 export default function DoctorAppointments() {
   const { user } = useOutletContext();
+  const [searchParams] = useSearchParams();
+  const patientFilter = searchParams.get('patient') || '';
   const [appointments, setAppointments] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [history, setHistory] = useState({});
@@ -49,13 +52,12 @@ export default function DoctorAppointments() {
   async function openDocument(document) {
     setBusyId(document.id); setError('');
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/documents/${document.id}/download`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
-      if (!response.ok) throw new Error('This shared document is no longer available.');
-      const url = URL.createObjectURL(await response.blob());
+      const response = await downloadDocument(document.id);
+      const url = URL.createObjectURL(response.data);
       const tab = window.open(url, '_blank', 'noopener,noreferrer');
       if (!tab) { const link = window.document.createElement('a'); link.href = url; link.download = document.filename; link.click(); }
       window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
-    } catch (requestError) { setError(requestError.message); }
+    } catch (requestError) { setError(requestError.response ? 'This shared document is no longer available.' : requestError.message); }
     finally { setBusyId(''); }
   }
   async function loadSlots(event) {
@@ -80,7 +82,7 @@ export default function DoctorAppointments() {
     finally { setBusyId(''); }
   }
 
-  const filtered = appointments.filter((appointment) => !filter || (appointment.patientName || '').toLowerCase().includes(filter.toLowerCase()));
+  const filtered = appointments.filter((appointment) => (!patientFilter || String(appointment.patientId) === patientFilter) && (!filter || (appointment.patientName || '').toLowerCase().includes(filter.toLowerCase())));
   if (loading) return <section className="appointments"><h2>Appointments</h2><p className="empty-state" role="status">Loading your schedule…</p></section>;
 
   return <section className="appointments doctor-appointments-page">
@@ -93,8 +95,8 @@ export default function DoctorAppointments() {
       const appDate = new Date(app.date);
       const patientDocs = documents.filter((document) => document.patientId === String(app.patientId));
       return <article key={id} className="appointment-card doctor-appointment-card">
-        <div className="appointment-card-top"><div><p className="eyebrow">{appDate.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}</p><h3>{app.patientName || 'Patient'}</h3></div><span className={`status-badge status-${status}`}>{status}</span></div>
-        <p><strong>Time:</strong> {appDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UTC</p>
+        <div className="appointment-card-top"><div><p className="eyebrow">{formatIstDateTime(app.date)}</p><h3>{app.patientName || 'Patient'}</h3></div><span className={`status-badge status-${status}`}>{status}</span></div>
+        <p><strong>Time:</strong> {formatIstTime(app.date)}</p>
         {app.patientContactNumber && <p><strong>Patient contact:</strong> {app.patientContactNumber}</p>}
         {app.visitReason && <p><strong>Reason for visit:</strong> {app.visitReason}</p>}
         <p><strong>Payment:</strong> {app.paymentMethod === 'pay_at_hospital' ? 'Pay at hospital' : app.paymentMethod} · {app.paymentStatus || 'pending'}</p>
@@ -102,7 +104,7 @@ export default function DoctorAppointments() {
           {status === 'scheduled' && <><button type="button" className="btn-secondary" onClick={() => { setRescheduleId(rescheduleId === id ? '' : id); setRescheduleSlots([]); setError(''); }}>Reschedule</button><button type="button" className="btn-secondary destructive-action" onClick={() => { setCancelId(cancelId === id ? '' : id); setCancelReason(''); }}>Cancel appointment</button></>}
           {status === 'scheduled' && appDate <= new Date() && <button type="button" onClick={() => markComplete(id)} disabled={busyId === id}>Mark complete</button>}
         </div>
-        {rescheduleId === id && <form className="appointment-inline-form" onSubmit={(event) => submitReschedule(event, id)}><h4>Choose a new open time · UTC</h4><label>Date<input type="date" min={new Date().toISOString().slice(0, 10)} data-appointment={id} onChange={loadSlots} required /></label>{rescheduleSlots.length > 0 && <label>Available time<select value={rescheduleTime} onChange={(event) => setRescheduleTime(event.target.value)} required><option value="">Choose a slot</option>{rescheduleSlots.map((slot) => <option key={slot.startsAt} value={slot.startsAt}>{new Date(slot.startsAt).toISOString().slice(11, 16)}</option>)}</select></label>}<label>Reason (optional)<input value={rescheduleReason} maxLength="500" onChange={(event) => setRescheduleReason(event.target.value)} /></label><button type="submit" disabled={!rescheduleTime || busyId === id}>{busyId === id ? 'Saving…' : 'Confirm new time'}</button></form>}
+        {rescheduleId === id && <form className="appointment-inline-form" onSubmit={(event) => submitReschedule(event, id)}><h4>Choose a new open time · IST</h4><label>Date<input type="date" min={getIstDateKey(new Date())} data-appointment={id} onChange={loadSlots} required /></label>{rescheduleSlots.length > 0 && <label>Available time<select value={rescheduleTime} onChange={(event) => setRescheduleTime(event.target.value)} required><option value="">Choose a slot</option>{rescheduleSlots.map((slot) => <option key={slot.startsAt} value={slot.startsAt}>{formatIstTime(slot.startsAt)}</option>)}</select></label>}<label>Reason (optional)<input value={rescheduleReason} maxLength="500" onChange={(event) => setRescheduleReason(event.target.value)} /></label><button type="submit" disabled={!rescheduleTime || busyId === id}>{busyId === id ? 'Saving…' : 'Confirm new time'}</button></form>}
         {cancelId === id && <form className="appointment-inline-form" onSubmit={(event) => submitCancellation(event, id)}><h4>Cancel appointment</h4><label>Reason for the patient<textarea value={cancelReason} onChange={(event) => setCancelReason(event.target.value)} maxLength="500" required /></label><button type="submit" className="destructive-action" disabled={!cancelReason.trim() || busyId === id}>{busyId === id ? 'Cancelling…' : 'Confirm cancellation'}</button></form>}
         <div className="appointment-record-actions"><button type="button" className="btn-secondary" onClick={() => showHistory(String(app.patientId))}>View medical history</button><label>Consultation notes<textarea rows="3" maxLength="10000" value={summaries[id] || ''} onChange={(event) => setSummaries((current) => ({ ...current, [id]: event.target.value }))} /></label><button type="button" onClick={() => saveSummary(id)} disabled={busyId === id}>{busyId === id ? 'Saving…' : 'Save notes'}</button></div>
         {history[String(app.patientId)] && <section className="patient-history-panel"><h4>Patient-provided history</h4><p><strong>Allergies:</strong> {history[String(app.patientId)].allergies?.join(', ') || 'None listed'}</p><p><strong>Conditions:</strong> {history[String(app.patientId)].conditions?.join(', ') || 'None listed'}</p><p><strong>Medications:</strong> {history[String(app.patientId)].medications?.join(', ') || 'None listed'}</p><p><strong>Surgeries:</strong> {history[String(app.patientId)].surgeries?.join(', ') || 'None listed'}</p></section>}

@@ -1,4 +1,4 @@
-function createRateLimit({ windowMs, max, message = 'Too many requests. Please try again later.' }) {
+function createRateLimit({ windowMs, max, message = 'Too many requests. Please try again later.', keyGenerator = (req) => req.ip || req.socket.remoteAddress || 'unknown' }) {
   const buckets = new Map();
   let lastPrune = Date.now();
   return (req, res, next) => {
@@ -7,7 +7,7 @@ function createRateLimit({ windowMs, max, message = 'Too many requests. Please t
       for (const [key, bucket] of buckets) if (now >= bucket.resetAt) buckets.delete(key);
       lastPrune = now;
     }
-    const key = req.ip || req.socket.remoteAddress || 'unknown';
+    const key = keyGenerator(req);
     let bucket = buckets.get(key);
     if (!bucket || now >= bucket.resetAt) bucket = { count: 0, resetAt: now + windowMs };
     bucket.count += 1;

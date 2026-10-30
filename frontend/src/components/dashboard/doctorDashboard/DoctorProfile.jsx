@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useLocation, useOutletContext } from 'react-router-dom';
 import { addDoctorTimeBlock, getDoctorSchedule, removeDoctorTimeBlock, saveDoctorSchedule, updateDoctorPhoto, updateDoctorProfile } from '../../../api';
+import { formatIstDateTime, istLocalDateTimeToUtc, istWindowsToUtc, utcWindowsToIst } from '../../../utils/istDateTime';
 import './DoctorProfile.css';
 
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -9,6 +10,7 @@ const asText = (value) => Array.isArray(value) ? value.join(', ') : value || '';
 
 export default function DoctorProfile() {
   const { user } = useOutletContext();
+  const location = useLocation();
   const [profile, setProfile] = useState(blankProfile);
   const [windows, setWindows] = useState([]);
   const [blocks, setBlocks] = useState([]);
@@ -29,13 +31,19 @@ export default function DoctorProfile() {
     setLoadingSchedule(true);
     try {
       const result = await getDoctorSchedule(user._id);
-      setWindows((result.windows || []).map((item) => ({ weekday: Number(item.weekday), startTime: String(item.start_time).slice(0, 5), endTime: String(item.end_time).slice(0, 5), slotMinutes: Number(item.slot_minutes) })));
+      setWindows(utcWindowsToIst((result.windows || []).map((item) => ({ weekday: Number(item.weekday), startTime: String(item.start_time).slice(0, 5), endTime: String(item.end_time).slice(0, 5), slotMinutes: Number(item.slot_minutes) }))));
       setBlocks(result.blocks || []);
     } catch (requestError) { setError(requestError.response?.data?.message || 'Unable to load schedule settings.'); }
     finally { setLoadingSchedule(false); }
   }, [user?._id]);
 
   useEffect(() => { if (user?._id) refreshSchedule(); }, [refreshSchedule, user?._id]);
+
+  useEffect(() => {
+    if (location.pathname.endsWith('/availability') && !loadingSchedule) {
+      document.getElementById('availability')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [location.pathname, loadingSchedule]);
 
   function update(event) { setProfile((current) => ({ ...current, [event.target.name]: event.target.value })); }
 
@@ -61,7 +69,7 @@ export default function DoctorProfile() {
 
   async function saveSchedule(event) {
     event.preventDefault(); setSavingSchedule(true); setError(''); setMessage('');
-    try { await saveDoctorSchedule(user._id, windows); setMessage('Weekly working hours saved in UTC.'); await refreshSchedule(); }
+    try { await saveDoctorSchedule(user._id, istWindowsToUtc(windows)); setMessage('Weekly working hours saved in IST.'); await refreshSchedule(); }
     catch (requestError) { setError(requestError.response?.data?.message || 'Unable to save working hours.'); }
     finally { setSavingSchedule(false); }
   }
@@ -69,7 +77,7 @@ export default function DoctorProfile() {
   async function addBlock(event) {
     event.preventDefault(); setError(''); setMessage('');
     try {
-      await addDoctorTimeBlock(user._id, { startsAt: `${blockForm.startsAt}:00Z`, endsAt: `${blockForm.endsAt}:00Z`, reason: blockForm.reason });
+      await addDoctorTimeBlock(user._id, { startsAt: istLocalDateTimeToUtc(blockForm.startsAt), endsAt: istLocalDateTimeToUtc(blockForm.endsAt), reason: blockForm.reason });
       setBlockForm({ startsAt: '', endsAt: '', reason: '' }); setMessage('Time off added.'); await refreshSchedule();
     } catch (requestError) { setError(requestError.response?.data?.message || 'Unable to block this time.'); }
   }
@@ -112,18 +120,18 @@ export default function DoctorProfile() {
         </div></section>
         <button className="btn" type="submit" disabled={savingProfile}>{savingProfile ? 'Saving profile…' : 'Save professional profile'}</button>
       </form>
-      <section className="portal-section schedule-section" id="availability"><div className="portal-section-heading"><p className="eyebrow">UTC</p><h3>Weekly working hours</h3><p>Only these 30-minute appointment slots will be offered to patients.</p></div>
+      <section className="portal-section schedule-section" id="availability"><div className="portal-section-heading"><p className="eyebrow">IST · ASIA/KOLKATA</p><h3>Weekly working hours</h3><p>Set your patient-facing appointment availability in India Standard Time.</p></div>
         {loadingSchedule ? <p role="status">Loading availability…</p> : <form onSubmit={saveSchedule}>
           {days.map((day, weekday) => <div className="schedule-day" key={day}><div className="schedule-day-heading"><strong>{day}</strong><button type="button" className="btn-secondary" onClick={() => addWindow(weekday)}>Add hours</button></div>
-            {windows.filter((window) => window.weekday === weekday).map((window) => { const index = windows.indexOf(window); return <div className="schedule-window" key={`${weekday}-${index}`}><label>From<input type="time" value={window.startTime} onChange={(event) => changeWindow(index, 'startTime', event.target.value)} required /></label><label>To<input type="time" value={window.endTime} onChange={(event) => changeWindow(index, 'endTime', event.target.value)} required /></label><span>30-minute slots</span><button type="button" className="text-button" aria-label={`Remove ${day} hours`} onClick={() => setWindows((current) => current.filter((_, itemIndex) => itemIndex !== index))}>Remove</button></div>; })}
+            {windows.filter((window) => window.weekday === weekday).map((window) => { const index = windows.indexOf(window); return <div className="schedule-window" key={`${weekday}-${index}`}><label>From<input type="time" value={window.startTime} onChange={(event) => changeWindow(index, 'startTime', event.target.value)} required /></label><label>To<input type="text" inputMode="numeric" pattern="(?:[01]\d|2[0-3]):[0-5]\d|24:00" placeholder="HH:MM" value={window.endTime} onChange={(event) => changeWindow(index, 'endTime', event.target.value)} required /></label><span>30-minute slots</span><button type="button" className="text-button" aria-label={`Remove ${day} hours`} onClick={() => setWindows((current) => current.filter((_, itemIndex) => itemIndex !== index))}>Remove</button></div>; })}
             {windows.every((window) => window.weekday !== weekday) && <p className="schedule-off">Not accepting appointments</p>}
           </div>)}
           <button className="btn" type="submit" disabled={savingSchedule}>{savingSchedule ? 'Saving hours…' : 'Save working hours'}</button>
         </form>}
       </section>
       <section className="portal-section schedule-section"><div className="portal-section-heading"><h3>Time off and blocked dates</h3><p>Blocking a time period is not allowed when it overlaps an existing appointment.</p></div>
-        <form className="time-block-form" onSubmit={addBlock}><label>Start (UTC)<input type="datetime-local" value={blockForm.startsAt} onChange={(event) => setBlockForm({ ...blockForm, startsAt: event.target.value })} required /></label><label>End (UTC)<input type="datetime-local" value={blockForm.endsAt} onChange={(event) => setBlockForm({ ...blockForm, endsAt: event.target.value })} required /></label><label>Reason (optional)<input maxLength="240" value={blockForm.reason} onChange={(event) => setBlockForm({ ...blockForm, reason: event.target.value })} /></label><button type="submit" className="btn">Block time</button></form>
-        {blocks.length ? <ul className="time-block-list">{blocks.map((block) => <li key={block.id}><span><strong>{new Date(block.startsAt).toLocaleString('en-GB', { timeZone: 'UTC', dateStyle: 'medium', timeStyle: 'short' })} – {new Date(block.endsAt).toLocaleString('en-GB', { timeZone: 'UTC', dateStyle: 'medium', timeStyle: 'short' })} UTC</strong>{block.reason && <small>{block.reason}</small>}</span><button type="button" className="btn-secondary" onClick={() => deleteBlock(block.id)}>Remove block</button></li>)}</ul> : <p className="empty-state">No upcoming time off.</p>}
+        <form className="time-block-form" onSubmit={addBlock}><label>Start (IST)<input type="datetime-local" value={blockForm.startsAt} onChange={(event) => setBlockForm({ ...blockForm, startsAt: event.target.value })} required /></label><label>End (IST)<input type="datetime-local" value={blockForm.endsAt} onChange={(event) => setBlockForm({ ...blockForm, endsAt: event.target.value })} required /></label><label>Reason (optional)<input maxLength="240" value={blockForm.reason} onChange={(event) => setBlockForm({ ...blockForm, reason: event.target.value })} /></label><button type="submit" className="btn">Block time</button></form>
+        {blocks.length ? <ul className="time-block-list">{blocks.map((block) => <li key={block.id}><span><strong>{formatIstDateTime(block.startsAt)} – {formatIstDateTime(block.endsAt)}</strong>{block.reason && <small>{block.reason}</small>}</span><button type="button" className="btn-secondary" onClick={() => deleteBlock(block.id)}>Remove block</button></li>)}</ul> : <p className="empty-state">No upcoming time off.</p>}
       </section>
     </section>
   );

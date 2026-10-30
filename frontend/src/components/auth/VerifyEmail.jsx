@@ -1,19 +1,22 @@
-import { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { resendVerificationEmail, verifyEmail } from '../../api';
 import '../login/Login.css';
 
 export default function VerifyEmail() {
   const [params] = useSearchParams();
+  const location = useLocation();
   const token = params.get('token');
+  const verificationStarted = useRef(false);
   const [email, setEmail] = useState(params.get('email') || '');
-  const [message, setMessage] = useState(token ? 'Checking your verification link…' : 'Enter your account email and we will send a new verification link.');
+  const [message, setMessage] = useState(token ? 'Checking your verification link…' : location.state?.notice || 'Enter your account email and we will send a new verification link.');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(Boolean(token));
   const [verified, setVerified] = useState(false);
 
   useEffect(() => {
-    if (!token) return undefined;
+    if (!token || verificationStarted.current) return undefined;
+    verificationStarted.current = true;
     let active = true;
     verifyEmail(token)
       .then((response) => { if (active) { setMessage(response.data.message || 'Your email has been verified.'); setVerified(true); } })
@@ -31,7 +34,9 @@ export default function VerifyEmail() {
       const response = await resendVerificationEmail(email.trim());
       setMessage(response.data.message || 'If the account needs verification, a new email has been sent.');
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'We could not process your request right now. Please try again.');
+      const retryAfter = Number(requestError.response?.headers?.['retry-after']);
+      const retryText = retryAfter ? ` Try again in about ${Math.ceil(retryAfter / 60)} minute(s).` : '';
+      setError((requestError.response?.data?.message || (requestError.response ? 'The verification email request failed.' : 'Could not reach the email service. Check your connection and try again.')) + retryText);
     } finally {
       setLoading(false);
     }
