@@ -6,6 +6,7 @@ require('dotenv').config();
 const apiRoutes = require('./routes/api');
 const { createPool } = require('./db');
 const { runMigrations } = require('./migrate');
+const { validateEmailConfiguration } = require('./services/email');
 
 const app = express();
 const port = Number(process.env.PORT) || 5000;
@@ -37,6 +38,7 @@ app.use((error, _req, res, _next) => {
 
 async function start() {
   if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) throw new Error('JWT_SECRET must contain at least 32 characters');
+  validateEmailConfiguration();
   const pool = createPool();
   await pool.query('SELECT 1');
   await runMigrations(pool);

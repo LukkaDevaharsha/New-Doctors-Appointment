@@ -3,4 +3,4 @@ Backend commands (run from backend/):
   npm start
   npm test
 
-Configure MySQL, JWT_SECRET, SMTP, and private storage in backend/.env (copy backend/.env.example first).
+Configure MySQL, JWT_SECRET, BREVO_API_KEY, BREVO_SENDER_EMAIL, BREVO_SENDER_NAME, and private storage in backend/.env (copy backend/.env.example first).

@@ -264,7 +264,7 @@ router.post('/register', authRateLimit, imageUpload.single('image'), async (req,
     const values = [role, name.trim(), normalizedEmail, await bcrypt.hash(password, 12), String(contactNumber || '').trim(), Number(age), String(gender || '').trim(), role === 'patient' ? String(req.body.address).trim() : null, role === 'doctor' ? String(req.body.specialization).trim() : null, role === 'doctor' ? String(req.body.hospitalName).trim() : null, storageId, tokenDigest(token), new Date(Date.now() + 24 * 60 * 60 * 1000)];
     const [result] = await db(req).execute('INSERT INTO users (role,name,email,password_hash,contact_number,age,gender,address,specialization,hospital_name,image_storage_id,email_verified,verification_token_hash,verification_expires_at,verification_sent_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,FALSE,?,?,UTC_TIMESTAMP(3))', values);
     let verificationEmailSent = true;
-    try { await sendVerificationEmail(normalizedEmail, token); }
+    try { await sendVerificationEmail(normalizedEmail, token, name.trim()); }
     catch (error) {
       verificationEmailSent = false;
       await db(req).execute('UPDATE users SET verification_token_hash=NULL,verification_expires_at=NULL,verification_sent_at=NULL WHERE id=? AND verification_token_hash=?', [result.insertId, tokenDigest(token)]).catch(() => {});
@@ -291,12 +291,12 @@ router.post('/email/resend', resendRateLimit, resendEmailRateLimit, async (req, 
   const generic = { message: 'If an account needs verification, a new email will be sent shortly.' };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.json(generic);
   try {
-    const [rows] = await db(req).execute("SELECT id,email FROM users WHERE email=? AND role IN ('patient','doctor') AND email_verified=FALSE LIMIT 1", [email]);
+    const [rows] = await db(req).execute("SELECT id,email,name FROM users WHERE email=? AND role IN ('patient','doctor') AND email_verified=FALSE LIMIT 1", [email]);
     if (!rows.length) return res.json(generic);
     const token = crypto.randomBytes(32).toString('hex');
     const [result] = await db(req).execute('UPDATE users SET verification_token_hash=?,verification_expires_at=DATE_ADD(UTC_TIMESTAMP(3),INTERVAL 24 HOUR),verification_sent_at=UTC_TIMESTAMP(3) WHERE id=? AND email_verified=FALSE AND (verification_sent_at IS NULL OR verification_sent_at<=DATE_SUB(UTC_TIMESTAMP(3),INTERVAL 60 SECOND))', [tokenDigest(token), rows[0].id]);
     if (result.affectedRows) {
-      try { await sendVerificationEmail(rows[0].email, token); }
+      try { await sendVerificationEmail(rows[0].email, token, rows[0].name); }
       catch (error) {
         await db(req).execute('UPDATE users SET verification_token_hash=NULL,verification_expires_at=NULL,verification_sent_at=NULL WHERE id=? AND verification_token_hash=?', [rows[0].id, tokenDigest(token)]).catch(() => {});
         console.error('Verification resend delivery failed:', emailErrorDiagnostic(error));

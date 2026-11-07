@@ -32,7 +32,7 @@ Requirements: Node.js 20+, MySQL 8+, and npm.
    npm run dev
    ```
 
-The development email transport is `EMAIL_MODE=mock`; it accepts messages without delivering their links or printing tokens. Configure SMTP to exercise real verification, password-recovery, and appointment notifications. For SMTP, set `EMAIL_MODE=smtp`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, and `EMAIL_FROM`. Set `FRONTEND_ORIGIN` to the deployed frontend origin. Keep all credentials and `PRIVATE_STORAGE_DIR` out of source control and public web roots.
+The development email mode is `EMAIL_MODE=mock`; it accepts messages without delivering their links or printing tokens. To send real verification, password-recovery, and appointment notifications, set `BREVO_API_KEY`, `BREVO_SENDER_EMAIL`, and `BREVO_SENDER_NAME` in the backend environment. Startup validates these values outside local mock mode. Set `FRONTEND_ORIGIN` to the deployed frontend origin. Keep all credentials and `PRIVATE_STORAGE_DIR` out of source control and public web roots.
 
 ## Development-only UI test patients
 

@@ -13,7 +13,7 @@ process.env.EMAIL_MODE = 'mock';
 process.env.PRIVATE_STORAGE_DIR = path.join(os.tmpdir(), `doc-app-api-test-${process.pid}`);
 process.env.FRONTEND_ORIGIN = 'https://new-doctors-appointment-lw1hfg7og-devaharsha119-3699.vercel.app';
 const apiRoutes = require('../routes/api');
-const { setTransporterForTests, emailErrorDiagnostic, normalizeSmtpPassword } = require('../services/email');
+const { setTransporterForTests, emailErrorDiagnostic } = require('../services/email');
 const { app: configuredServerApp } = require('../server');
 const app = express();
 app.use(express.json());
@@ -34,6 +34,8 @@ const pool = {
       return [{ insertId: registeredEmails.size + 100 }];
     }
     if (sql.includes('SELECT auth_version FROM users')) return authVersions.has(Number(params[0])) ? [[{ auth_version: authVersions.get(Number(params[0])) }]] : [[{ auth_version: 0 }]];
+    if (sql.includes('SELECT id,email,name FROM users WHERE email=?')) return params[0] === 'resend@example.test' ? [[{ id: 88, email: 'resend@example.test', name: 'Resend Patient' }]] : [[]];
+    if (sql.startsWith('UPDATE users SET verification_token_hash=')) return [{ affectedRows: 1 }];
     if (sql.includes('SELECT contact_number,email FROM users')) return [[{ contact_number: '000-TEST-0000', email: 'patient@example.test' }]];
     if (sql.includes("SELECT id FROM users WHERE id=? AND role='patient' FOR UPDATE")) return [[{ id: params[0] }]];
     if (sql.startsWith('UPDATE users SET password_hash=?,auth_version=auth_version+1')) {
@@ -243,23 +245,16 @@ test('verification token is single use and malformed tokens fail closed', async 
   assert.equal((await request('/email/verify', { method: 'POST', body: { token } })).status, 400);
 });
 
-test('SMTP diagnostics identify safe delivery phases without exposing raw command or server response', () => {
-  const diagnostic = emailErrorDiagnostic({ code: 'EAUTH', responseCode: 535, command: 'AUTH PLAIN synthetic-secret', response: 'server reply synthetic-secret', recipient: 'synthetic@example.test' });
-  assert.deepEqual(diagnostic, { phase: 'authentication', code: 'EAUTH', responseCode: 535 });
+test('Brevo diagnostics identify safe delivery phases without exposing credentials or user data', () => {
+  const diagnostic = emailErrorDiagnostic({ code: 'BREVO_AUTH', status: 401, message: 'synthetic-secret', recipient: 'synthetic@example.test' });
+  assert.deepEqual(diagnostic, { phase: 'authentication', status: 401, code: 'BREVO_AUTH' });
   assert.equal(JSON.stringify(diagnostic).includes('synthetic-secret'), false);
-  assert.equal(emailErrorDiagnostic({ code: 'ETIMEDOUT', timeoutType: 'CONNECT_TIMEOUT' }).phase, 'connection');
-  assert.equal(emailErrorDiagnostic({ code: 'ETLS', command: 'STARTTLS' }).phase, 'tls');
-  assert.equal(emailErrorDiagnostic({ code: 'ESOCKET', originalCode: 'ERR_TLS_CERT_ALTNAME_INVALID' }).phase, 'tls');
-  assert.equal(emailErrorDiagnostic({ code: 'EENVELOPE', command: 'MAIL FROM' }).phase, 'sender_rejection');
-  assert.equal(emailErrorDiagnostic({ code: 'EENVELOPE', command: 'RCPT TO' }).phase, 'recipient_rejection');
+  assert.equal(emailErrorDiagnostic({ code: 'ETIMEDOUT' }).phase, 'timeout');
+  assert.equal(emailErrorDiagnostic({ code: 'NETWORK_ERROR' }).phase, 'network');
+  assert.equal(emailErrorDiagnostic({ code: 'BREVO_RATE_LIMIT', status: 429 }).phase, 'rate_limit');
 });
 
-test('Gmail App Password display whitespace is removed without changing other SMTP passwords', () => {
-  assert.equal(normalizeSmtpPassword('smtp.gmail.com', 'abcd efgh ijkl mnop'), 'abcdefghijklmnop');
-  assert.equal(normalizeSmtpPassword('mail.example.test', 'pass phrase'), 'pass phrase');
-});
-
-test('registration keeps a created account when mocked SMTP fails and duplicate retries do not create another account', async () => {
+test('registration keeps a created account when mocked email fails and duplicate retries do not create another account', async () => {
   const email = `synthetic-${Date.now()}@example.test`;
   const makeForm = () => {
     const form = new FormData();
@@ -267,7 +262,7 @@ test('registration keeps a created account when mocked SMTP fails and duplicate 
     form.append('image', new Blob([Buffer.from([0xff, 0xd8, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])], { type: 'image/jpeg' }), 'synthetic.jpg');
     return form;
   };
-  setTransporterForTests({ sendMail: async () => { const error = new Error('synthetic SMTP failure'); error.code = 'ESMTP'; throw error; } });
+  setTransporterForTests({ sendMail: async () => { const error = new Error('synthetic Brevo failure'); error.code = 'BREVO_API_ERROR'; throw error; } });
   const failedDelivery = await fetch(`${base}/register`, { method: 'POST', body: makeForm() });
   assert.equal(failedDelivery.status, 201);
   assert.equal((await failedDelivery.json()).verificationEmailSent, false);
@@ -276,7 +271,7 @@ test('registration keeps a created account when mocked SMTP fails and duplicate 
   setTransporterForTests({ sendMail: async () => ({ messageId: 'synthetic-test' }) });
 });
 
-test('registration sends verification email with a mocked transport', async () => {
+test('registration sends verification email with a mocked delivery client', async () => {
   const email = `synthetic-success-${Date.now()}@example.test`;
   const form = new FormData();
   Object.entries({ role: 'patient', name: 'Synthetic Test', email, password: 'StrongPass123!', contactNumber: '555-010-1000', age: '30', gender: 'prefer-not-to-say', address: 'Synthetic Street' }).forEach(([key, value]) => form.append(key, value));
@@ -287,6 +282,17 @@ test('registration sends verification email with a mocked transport', async () =
   assert.equal(response.status, 201);
   assert.equal((await response.json()).verificationEmailSent, true);
   assert.equal(sent, true);
+});
+
+test('verification resend sends a refreshed link and does not send for an already-verified or unknown account', async () => {
+  let delivered = 0;
+  setTransporterForTests({ sendMail: async () => { delivered += 1; return { messageId: 'synthetic-test' }; } });
+  const success = await request('/email/resend', { method: 'POST', body: { email: 'resend@example.test' } });
+  assert.equal(success.status, 200);
+  assert.equal(delivered, 1);
+  const verified = await request('/email/resend', { method: 'POST', body: { email: 'verified@example.test' } });
+  assert.equal(verified.status, 200);
+  assert.equal(delivered, 1);
 });
 
 test('verification resend limit returns Retry-After without exposing account existence', async () => {
